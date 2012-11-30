@@ -14,7 +14,7 @@
 | path to your installation.
 |
 */
-$config['base_url']	= 'http://localhost/Distribution/customer/admin/' ;
+$config['base_url']	= 'http://localhost/argus/customer/admin/' ;
 
 /*
 |--------------------------------------------------------------------------
