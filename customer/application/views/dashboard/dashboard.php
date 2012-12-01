@@ -1,23 +1,23 @@
 <div id="right">
-	
 	<div class="section">
 		<div class="third">
 			<div class="box">
 				<div class="title">Account Balance<span class="hide"></span></div>
 				<div class="content">
-				<h6></h6>
-				<?php
-					if($orders)
-					{
-						foreach($orders as $rec) :
-							$date_dffierece = date_func2($rec->invoice_date,  $customer_rec->overdue_days) ;
-							if($date_dffierece > 0){ echo '<h6  style="color:#FF0000">' ; break ; }
-							else echo '<h6 style="color:#000000">' ;
-					 	endforeach ;
-					}
-				?>
-					&pound; <?php echo abs($customer_rec->balance) ; ?></h6>
-					
+					<?php
+                        $flag1 = 0 ;
+						$flag2 = 0 ;
+						if($orders)
+                        {
+                            foreach($orders as $rec) :
+                                $date_dffierece = date_func2($rec->invoice_date,  $customer_rec->overdue_days) ;
+                                if($date_dffierece > 0){ echo '<h6 style="color:#FF0000"> &pound; '.abs($customer_rec->balance).'</h6>' ; $flag1 = 1 ; break ; }
+                                else { echo '<h6 style="color:#000000"> &pound; '.abs($customer_rec->balance).'</h6>' ; $flag2 = 1 ; }
+                            endforeach ;
+                        }
+						if(!$flag1 && !$flag2)
+							echo '<h6 style="color:#000000"> &pound; '.abs($customer_rec->balance).'</h6>' ;
+                    ?>
 				</div>
 			</div>
 		</div>
@@ -25,11 +25,10 @@
 			<div class="box">
 				<div class="title">Credit Limit<span class="hide"></span></div>
 				<div class="content">
-				<h6></h6>
-				<h6 style="color:#000000">&pound; <?php echo $customer_rec->maximum_limit ; ?></h6></div>
+					<h6 style="color:#000000">&pound; <?php echo $customer_rec->maximum_limit ; ?></h6></div>
+				</div>
 			</div>
 		</div>
-	</div>
 	
     <div class="section">
 		<div class="box"><div class="title">Current Orders<span class="hide"></span></div>
@@ -79,7 +78,7 @@
 				<tr <?php if($t_diff > 0) { ?> style="background-color:#FF6A6A;" <?php } ?>>
 					<td><?php echo $rec->purchase_order_number ; ?></td>
 					<td><?php echo date("d/m/Y", strtotime($rec->invoice_date)); ?></td>
-					<td><?php echo date("d/m/Y", strtotime($overdue_date)) ; ?></td>
+					<td><?php if($t_diff > 0) echo "Overdue by ".$t_diff. " day(s)" ; else echo date("d/m/Y", strtotime($overdue_date)) ; ?></td>
 					<td><?php echo $rec->status ; ?></td>
 					<td><?php echo $rec->invoice_amount ; ?></td>
                     <td><?php echo floatval(get_due_amount($rec->id, $rec->customer_id)) ; ?></td>

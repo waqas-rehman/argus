@@ -23,7 +23,6 @@ class Home extends CI_Controller
 	
 	public function login()
 	{
-		//$this->load->library('phpbb_bridge');
 		if($_POST)
 		{
 			$cond1["username"] = mysql_real_escape_string($this->input->post("username")) ;
@@ -40,12 +39,7 @@ class Home extends CI_Controller
 				$this->update_record($rec->id) ;
 				$session_data = array("admin_logged_in" => TRUE, "admin_id" => $admin_rec->id , 'name' => $admin_rec->contact_person_name, 'email' => $admin_rec->email_address) ;
 				
-				
-			$this->session->set_userdata($session_data) ;
-				
-				
-			//$this->Phpbb_bridge->user_login($cond1["username"],$cond1["password"]);
-				
+				$this->session->set_userdata($session_data) ;
 				redirect(base_url("dashboard")) ;
 				
 			} else

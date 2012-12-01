@@ -44,17 +44,11 @@
 <?php
 	function date_func2($invoice_date, $overdue_days)
 	{
-	 $overdue_date =  date("Y-m-d", strtotime($invoice_date . "+".(intval($overdue_days))." day"))."<br />" ;
-		//$overdue_date = "2012-11-01";
-		
+		$overdue_date =  date("Y-m-d", strtotime($invoice_date . "+".(intval($overdue_days))." day")) ;
 		$diff = intval(get_date_diff(date("Y-m-d"), $overdue_date)) ; 
-		if ($diff <= 0) {
-		
-		echo $overdue_date;
-		}
-		if ($diff > 0 ) {
-		echo "Overdue by ".$diff. " day(s)";
-		
-		}
+		if ($diff <= 0)
+			echo date("d/m/Y", strtotime($overdue_date)) ;
+		if ($diff > 0 )
+			echo "Overdue by ".$diff. " day(s)" ;
 	}
 ?>

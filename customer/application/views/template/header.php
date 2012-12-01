@@ -169,6 +169,10 @@ $(function(){
                             <li <?php if($session_data["sub_current_tab"] == "change_password") echo 'class="current"' ; ?>>
                             	<a href="<?php echo base_url("account/change_password") ; ?>">Change Password</a>
                             </li>
+                            
+                            <li <?php if($session_data["sub_current_tab"] == "transactions") echo 'class="current"' ; ?>>
+                            	<a href="<?php echo base_url("account/transactions") ; ?>">Transactions</a>
+                            </li>
 						</ul>
                     </li> 
 				</ul>

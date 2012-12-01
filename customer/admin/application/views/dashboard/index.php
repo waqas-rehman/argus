@@ -39,7 +39,7 @@
                             <tr class='gradeX'>
                             	<td class='center'><a href="<?php echo base_url("orders/order_details/".$rec->id) ; ?>"><?php echo $rec->purchase_order_number ; ?></a></td>
                                 <td class='center'><?php echo $rec->status ; ?></td>
-                                <td class='center'><?php echo date("d/m/Y", strtotime($rec->order_date)) ; ?></td>
+                                <td class='center'><?php if($rec->order_date != "0000-00-00 00:00:00") echo date("d/m/Y", strtotime($rec->order_date)) ; else echo "-" ; ?></td>
                                 <td class='center'>
                                 	&nbsp;<a href="<?php echo base_url("orders/edit_status/".$rec->id."/0") ; ?>"><img title="Edit Record" src="<?php echo base_url("img/icons/packs/fugue/16x16/pencil.png") ; ?>" /></a>
                                     &nbsp;<a href="<?php echo base_url("product/remove_product/".$rec->id) ; ?>" onclick="return confirm('Are you sure to delete this record?')" ><img title="Remove Record" src="<?php echo base_url("img/icons/packs/fugue/16x16/cross-script.png") ; ?>" /></a>

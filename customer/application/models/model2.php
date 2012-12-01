@@ -173,7 +173,7 @@ public function get_orders_accepted($customer_id)
 public function get_customer_invoice2($customer_id)
 	{
 	
-		$q = "(SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Outstanding' AND customer_id = ".$customer_id."  ORDER BY orders.outstanding_date DESC) UNION (SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Invoiced' AND customer_id = ".$customer_id."  ORDER BY orders.invoice_date DESC)" ;
+		$q = "(SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, orders.invoice_amount as invoice_amount, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Outstanding' AND customer_id = ".$customer_id."  ORDER BY orders.outstanding_date DESC) UNION (SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, orders.invoice_amount as invoice_amount, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Invoiced' AND customer_id = ".$customer_id."  ORDER BY orders.invoice_date DESC)" ;
 		
 		$query = $this->db->query($q) ;
 		
@@ -202,5 +202,36 @@ public function get_customer_outstanding($customer_id)
 		else return 0 ;
 	}
 
+	public function get_customer_transactions($customer_id, $order_id)
+	{
+		$q = "SELECT transactions.id, transactions.order_id, transactions.customer_id, transactions.transaction_type, transactions.transaction_amount, transactions.timestamp, orders.purchase_order_number FROM transactions INNER JOIN orders ON transactions.order_id = orders.id WHERE transactions.customer_id = $customer_id AND transactions.order_id = $order_id" ;
+		
+		$query = $this->db->query($q) ;
+		
+		if ($query->num_rows() > 0)
+		{
+			foreach ($query->result() as $row)
+				$data[] =  $row ;
+			return $data ;
+		}
+		else return 0 ;
+	}
+
+	public function get_transaction_orders($customer_id)
+	{
+	
+		$q = "(SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, orders.invoice_amount as invoice_amount, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Outstanding' AND customer_id = ".$customer_id."  ORDER BY orders.outstanding_date DESC) UNION (SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, orders.invoice_amount as invoice_amount, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Invoiced' AND customer_id = ".$customer_id."  ORDER BY orders.invoice_date DESC) UNION (SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, orders.invoice_amount as invoice_amount, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Completed' AND customer_id = ".$customer_id."  ORDER BY orders.invoice_date DESC)" ;
+		
+		$query = $this->db->query($q) ;
+		
+		if ($query->num_rows() > 0)
+		{
+			foreach ($query->result() as $row)
+				$data[] =  $row ;
+			return $data ;
+		}
+		else 
+			 return 0 ;
+	}
 }
 ?>

@@ -1,0 +1,24 @@
+FTP:
+
+ftp://ftp.argusdistribution.co.uk
+
+Username: argusdistribution.co.uk
+Password: yEyrGqxDx
+
+
+
+DATABASE:
+
+PHPMyAdmin address is: http://79.170.40.178/phpmyadmin/
+
+host: localhost
+
+Database Name: web178-portal-1
+
+Username: web178-portal-1
+Password: AsfgHjkl1
+
+
+
+Customer end url: http://portal.argusdistribution.co.uk
+Admin end URl: http://portal.argusdistribution.co.uk/admin

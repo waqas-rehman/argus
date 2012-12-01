@@ -21,6 +21,16 @@ class Account extends CI_Controller
 		$this->load->view('template/body', $data);
 	}
 	
+	public function transactions($msg = 0)
+	{
+		$data["orders"] =  $this->model2->get_transaction_orders($this->session->userdata("customer_id")) ;
+		$data["msg"] = $msg ;
+		$data["session_data"] = $this->session_data("transactions") ;
+		$data["view"] = "account/transactions" ;
+		$this->load->view('template/body', $data);
+	}
+	
+	
 	public function update_account_info()
 	{
 		if($_POST)
