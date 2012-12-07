@@ -18,7 +18,7 @@
 					<thead> 
 						<tr>
 							<th>Product Group</th>
-							<th>Product code - ADL code</th>
+							<th>ADL Code - Product Code</th>
 							<th>Quantity</th>
 							<th>Unit Price (&pound;)</th>
                             <th>Total Price (&pound;)</th>

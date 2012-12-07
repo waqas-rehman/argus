@@ -45,7 +45,7 @@
                             <td><?php echo $rec->product_name ; ?></td>
                             <td><?php echo $rec->product_code ; ?></td>
                             <td><?php echo $rec->adl_code ; ?></td>
-                            <td><?php if($rec->new_price == "") { echo $rec->product_price ; } else { echo $rec->new_price ; } ?></td>
+                            <td><?php if($rec->new_price == "") { echo get_decimal_number_format($rec->product_price) ; } else { echo get_decimal_number_format($rec->new_price) ; } ?></td>
                             <?php if($rec->product_manual != "") { ?>
                             <td><a href="<?php echo base_url("products/download_manual/".$rec->product_id) ; ?>"><img title="Download Manual" src="<?php echo base_url("gfx/icons/small/drive-download.png") ; ?>" /></a></td>
                         	<?php } else { ?>

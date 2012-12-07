@@ -43,6 +43,7 @@ class Account extends CI_Controller
 			$param1["address_line_1"] = mysql_real_escape_string($this->input->post("address_line_1")) ;
 			$param1["address_line_2"] = mysql_real_escape_string($this->input->post("address_line_2")) ;
 			$param1["city"] = mysql_real_escape_string($this->input->post("city")) ;
+			$param1["county"] = mysql_real_escape_string($this->input->post("county")) ;
 			$param1["country"] = mysql_real_escape_string($this->input->post("country")) ;
 			$param1["post_code"] = mysql_real_escape_string($this->input->post("post_code")) ;
 			

@@ -73,7 +73,7 @@
 					
 					<td align="center"><?php echo $product_quantity ;?></td>
 					<td align="center"><?php echo $product_price ;?></td>
-					<td align="left"><?php echo number_format(($product_quantity * $product_price), 2 , ".", ",") ;?></td>
+					<td align="left"><?php echo get_decimal_number_format($product_quantity * $product_price) ;?></td>
 					
 				
 				</tr>
@@ -87,16 +87,16 @@
                         
                         <tr id="last2">
                         	<td colspan="5" style="text-align:right !important;">Sub Total Amount: </td>
-                            <td id="sub_total"><?php echo number_format(($product_quantity * $product_price + $transport_charges), 2 , ".", ",") ; ?></td>
+                            <td id="sub_total"><?php echo get_decimal_number_format($product_quantity * $product_price + $transport_charges) ; ?></td>
                       	</tr>
 					<tr id="last4">
                         	<td colspan="5" style="text-align:right !important;">VAT (20%)</td>
-                            <td id="sub_total_vat"><?php echo number_format(($vat_rate), 2 , ".", ",") ; ?></td>
+                            <td id="sub_total_vat"><?php echo get_decimal_number_format($vat_rate) ; ?></td>
                         </tr>
                         
                         <tr id="last6">
                         	<td colspan="5" style="text-align:right !important;">Total</td>
-                            <td id="total_plus_vat"><?php echo number_format(($invoice_amount), 2, ".", ",") ;  ?></td>
+                            <td id="total_plus_vat"><?php echo get_decimal_number_format($invoice_amount) ;  ?></td>
                         </tr>
 				
 				

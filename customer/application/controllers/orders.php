@@ -25,40 +25,34 @@ class Orders extends CI_Controller
 	
 	public function order_form()
 	{
-		$cond1["id"] = $this->session->userdata("customer_id");
+		$cond1["id"] = $this->session->userdata("customer_id") ;
 		$data["customer_rec"] = $this->model1->get_one($cond1, "customers") ;
-		$credit_limit = $data["customer_rec"]->maximum_limit;
-		$acount_balance = abs($data["customer_rec"]->balance);
-		
+		$credit_limit = get_decimal_number_format(abs($data["customer_rec"]->maximum_limit)) ;
+		$acount_balance = get_decimal_number_format(abs($data["customer_rec"]->balance)) ;
 		
 		$orders = $this->model2->get_customer_invoice2($this->session->userdata("customer_id"));
 		
 		if($orders)
-					{
-				foreach($orders as $rec) :
-												
-			$overdue_date =  date("Y-m-d", strtotime($rec->invoice_date . "+".(intval($data["customer_rec"]->overdue_days))." day"))."<br />" ;
-		
-		 $diff = intval(get_date_diff(date("Y-m-d"), $overdue_date)) ;		
-		endforeach ;
-			}
+		{
+			foreach($orders as $rec) :
+				$overdue_date =  date("Y-m-d", strtotime($rec->invoice_date . "+".(intval($data["customer_rec"]->overdue_days))." day"))."<br />" ;
+				$diff = intval(get_date_diff(date("Y-m-d"), $overdue_date)) ;		
+			endforeach ;
+		}
 			
-		if (!$orders) $diff = ""; 
-		if ($acount_balance >= $credit_limit || $diff > 0 ) {
+		if(!$orders) $diff = "" ; 
 		
-		$data["msg"] = 1 ;
-		$data["session_data"] = $this->session_data("order_form") ;
-		$data["view"] = "order/acount_overdue" ;
-		$this->load->view("template/body", $data) ;
-		}
-		
-		else {
-		$data["msg"] = 0 ;
-		$data["session_data"] = $this->session_data("order_form") ;
-		$data["view"] = "order/order_form" ;
-		$this->load->view("template/body", $data) ;
-		}
-		
+		if(($acount_balance >= $credit_limit) || ($diff > 0)) {
+			$data["msg"] = 1 ;
+			$data["session_data"] = $this->session_data("order_form") ;
+			$data["view"] = "order/acount_overdue" ;
+			$this->load->view("template/body", $data) ;
+		} else {
+			$data["msg"] = 0 ;
+			$data["session_data"] = $this->session_data("order_form") ;
+			$data["view"] = "order/order_form" ;
+			$this->load->view("template/body", $data) ;
+		}		
 	}
 	
 	public function order_detail($order_id = 0, $msg = 0)

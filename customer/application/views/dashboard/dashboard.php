@@ -11,12 +11,12 @@
                         {
                             foreach($orders as $rec) :
                                 $date_dffierece = date_func2($rec->invoice_date,  $customer_rec->overdue_days) ;
-                                if($date_dffierece > 0){ echo '<h6 style="color:#FF0000"> &pound; '.abs($customer_rec->balance).'</h6>' ; $flag1 = 1 ; break ; }
-                                else { echo '<h6 style="color:#000000"> &pound; '.abs($customer_rec->balance).'</h6>' ; $flag2 = 1 ; }
+                                if($date_dffierece > 0) { echo '<h6 style="color:#FF0000"> &pound; '.get_decimal_number_format(abs($customer_rec->balance)).'</h6>' ; $flag1 = 1 ; break ; }
+                                else { echo '<h6 style="color:#000000"> &pound; '.get_decimal_number_format(abs($customer_rec->balance)).'</h6>' ; $flag2 = 1 ; }
                             endforeach ;
                         }
 						if(!$flag1 && !$flag2)
-							echo '<h6 style="color:#000000"> &pound; '.abs($customer_rec->balance).'</h6>' ;
+							echo '<h6 style="color:#000000"> &pound; '.get_decimal_number_format(abs($customer_rec->balance)).'</h6>' ;
                     ?>
 				</div>
 			</div>
@@ -80,8 +80,8 @@
 					<td><?php echo date("d/m/Y", strtotime($rec->invoice_date)); ?></td>
 					<td><?php if($t_diff > 0) echo "Overdue by ".$t_diff. " day(s)" ; else echo date("d/m/Y", strtotime($overdue_date)) ; ?></td>
 					<td><?php echo $rec->status ; ?></td>
-					<td><?php echo $rec->invoice_amount ; ?></td>
-                    <td><?php echo floatval(get_due_amount($rec->id, $rec->customer_id)) ; ?></td>
+					<td><?php echo get_decimal_number_format($rec->invoice_amount) ; ?></td>
+                    <td><?php echo get_decimal_number_format(floatval(get_due_amount($rec->id, $rec->customer_id))) ; ?></td>
 				</tr>
 				<?php endforeach ; } else { ?>
 				<tr><td colspan="6" align="center">No record found.</td></tr>
@@ -113,7 +113,7 @@
 					<td><?php echo date("d/m/Y", strtotime($rec->invoice_date)); ?></td>
 					<td><?php echo date("d/m/Y", strtotime($rec->compeletion_date)) ; ?></td>
 					<td><?php echo date("d/m/Y", strtotime($rec->shipment_date)) ; ?></td>
-					<td><?php echo $rec->invoice_amount ; ?></td>
+					<td><?php echo get_decimal_number_format($rec->invoice_amount) ; ?></td>
 				</tr>
 				<?php endforeach ; } else { ?>
 				<tr><td colspan="5" align="center">No record found.</td></tr>

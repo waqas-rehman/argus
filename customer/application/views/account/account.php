@@ -48,8 +48,8 @@
                     </div>
                   	
                     <div class="row">
-                        <label>Country</label>
-                        <div class="right"><input type="text" value="<?php echo $customer_rec->country ; ?>" name="country" class="{validate:{required:true, messages:{required:'Country is required'}}}" /></div>
+                        <label>County</label>
+                        <div class="right"><input type="text" value="<?php echo $customer_rec->county ; ?>" name="county" class="{validate:{required:true, messages:{required:'County is required'}}}" /></div>
                     </div>
                     
                     <div class="row">
@@ -57,6 +57,10 @@
                             <div class="right"><input type="text" value="<?php echo $customer_rec->post_code ; ?>" name="post_code" class="{validate:{required:true, messages:{required:'Post Code is required'}}}" /></div>
                     </div>
                     
+                    <div class="row">
+                        <label>County</label>
+                        <div class="right"><input type="text" value="<?php echo $customer_rec->country ; ?>" name="country" class="{validate:{required:true, messages:{required:'Country is required'}}}" /></div>
+                    </div>
                     
                     <div class="row">
                     	<label></label>

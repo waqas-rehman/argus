@@ -61,12 +61,12 @@
                                 <?php echo $rec->product_quantity ; ?>
                             </td>
                             <!-- number_format ( float $number , int $decimals = 0 , string $dec_point = '.' , string $thousands_sep = ',' ) -->
-							<td id="unit_price_<?php echo $x ; ?>"><?php echo number_format($rec->product_price, 2 , ".", ",") ; ?></td>
+							<td id="unit_price_<?php echo $x ; ?>"><?php echo get_decimal_number_format($rec->product_price) ; ?></td>
                             <td id="total_price_<?php echo $x ; ?>">
 								<?php
-									echo number_format (($rec->product_price) * ($rec->product_quantity), 2 , ".", ",") ;
+									echo get_decimal_number_format(($rec->product_price) * ($rec->product_quantity)) ;
 									$temp_sub_total = $temp_sub_total + floatval(($rec->product_price) * ($rec->product_quantity)) ;
-								$temp_vat_tax = $temp_vat_tax + floatval((($rec->vat_rate)/100) * ($rec->product_price) * ($rec->product_quantity)) ;
+									$temp_vat_tax = $temp_vat_tax + floatval((($rec->vat_rate)/100) * ($rec->product_price) * ($rec->product_quantity)) ;
 								?>
                             </td>
                             <td id="action_<?php echo $x ; ?>">
@@ -107,17 +107,17 @@
 							<?php
 								$transport_charges = floatval(0.00) ;
 								if($temp_sub_total <= $customer_rec->maximum_limit) $transport_charges = $customer_rec->transport_charges ;
-								echo number_format(($transport_charges), 2 , ".", ",") ;
+								echo get_decimal_number_format($transport_charges) ;
 							?>
                             </td>
                             <td></td></tr>
                        
-                       <tr id="last2"><td colspan="4" style="text-align:right !important;">Sub Total Amount: </td><td id="sub_total"><?php echo number_format(($temp_sub_total + $transport_charges), 2 , ".", ",") ; ?></td><td></td></tr>
+                       <tr id="last2"><td colspan="4" style="text-align:right !important;">Sub Total Amount: </td><td id="sub_total"><?php echo get_decimal_number_format($temp_sub_total + $transport_charges) ; ?></td><td></td></tr>
                        <!-- <tr id="last3"><td colspan="4" style="text-align:right !important;">VAT Code: </td><td id="vat-code"><?php // echo $vat_rec->vat_code ; ?></td><td></td></tr> -->
                         <?php $temp_vat_tax = $temp_vat_tax + ($transport_charges * (floatval($vat_rec->vat_rate)/100)) ; ?>
-                        <tr id="last4"><td colspan="4" style="text-align:right !important;">VAT (<?php echo floatval($vat_rec->vat_rate)."%" ; ?>)</td><td id="sub_total_vat"><?php echo number_format(($temp_vat_tax), 2 , ".", ",") ; ?></td><td></td></tr>
+                        <tr id="last4"><td colspan="4" style="text-align:right !important;">VAT (<?php echo floatval($vat_rec->vat_rate)."%" ; ?>)</td><td id="sub_total_vat"><?php echo get_decimal_number_format($temp_vat_tax) ; ?></td><td></td></tr>
 						
-                        <tr id="last6"><td colspan="4" style="text-align:right !important;">Total</td><td id="total_plus_vat"><?php echo number_format($temp_vat_tax  + $temp_sub_total + $transport_charges, 2, ".", ",") ;  ?></td><td></td></tr>
+                        <tr id="last6"><td colspan="4" style="text-align:right !important;">Total</td><td id="total_plus_vat"><?php echo get_decimal_number_format($temp_vat_tax  + $temp_sub_total + $transport_charges) ;  ?></td><td></td></tr>
                     </tbody>
 				</table>
                 </div>
@@ -130,8 +130,8 @@
                 </div>
                 
                 <br />
-<input type="hidden" id="sub_total_hidden" name="sub_total_hidden" value="<?php echo number_format(($temp_sub_total), 2 , ".", ",") ; ?>" />
-<input type="hidden" id="vat_total_hidden" name="vat_total_hidden" value="<?php echo number_format(($temp_vat_tax), 2 , ".", ",") ; ?>" />
+<input type="hidden" id="sub_total_hidden" name="sub_total_hidden" value="<?php echo get_decimal_number_format($temp_sub_total) ; ?>" />
+<input type="hidden" id="vat_total_hidden" name="vat_total_hidden" value="<?php echo get_decimal_number_format($temp_vat_tax) ; ?>" />
 <input type="hidden" id="freight_charges" name="freight_charges" value="<?php if($temp_sub_total > $customer_rec->maximum_limit) echo $customer_rec->transport_charges ; else echo "0" ; ?>" />
                 <div class="row">
                 	<button id="save_and_submit" type="button"><span>Update</span></button>&nbsp;

@@ -48,8 +48,9 @@
                         <div class='_50'><p><label for="address_line_1">Address Line 1</label><input type="text" id="address_line_1" name="address_line_1" value="<?php echo $customer_rec->address_line_1 ; ?>" /></p></div>
                         <div class='_50'><p><label for="address_line_2">Address Line 2</label><input type="text" id="address_line_2" name="address_line_2" value="<?php echo $customer_rec->address_line_2 ; ?>" /></p></div>
                         <div class='_50'><p><label for="city">City</label><input type="text" id="city" name="city" value="<?php echo $customer_rec->city ; ?>" /></p></div>
-                        <div class='_50'><p><label for="address_line_2">Country</label><input type="text" id="country" name="country" value="<?php echo $customer_rec->country ; ?>" /></p></div>
+                        <div class='_50'><p><label for="county">County</label><input type="text" id="county" name="county" value="<?php echo $customer_rec->county ; ?>" /></p></div>
                         <div class='_50'><p><label for="post_code">Post Code</label><input type="text" id="post_code" name="post_code" value="<?php echo $customer_rec->post_code ; ?>" /></p></div>
+                        <div class='_50'><p><label for="country">Country</label><input type="text" id="country" name="country" value="<?php echo set_value("country") ; ?>" /></p></div>
                         <div class='_50'><p><span class="status">Status</span><select id="status" name="status"><option value="Active" <?php if($customer_rec->status == "Active") echo 'selected="selected"'; ?>>Active</option><option value="Disable" <?php if($customer_rec->status == "Disable") echo 'selected="selected"'; ?>>Disable</option></select></p></div>
 					</fieldset>
                  

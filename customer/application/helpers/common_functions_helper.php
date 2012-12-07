@@ -158,3 +158,11 @@ if ( ! function_exists('get_due_amount'))
 		return $net ;
     }
 }
+
+if ( ! function_exists('get_decimal_number_format'))
+{
+	function get_decimal_number_format($number)
+	{
+		return number_format($number, 2, '.', '');
+    }
+}

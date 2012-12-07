@@ -85,12 +85,6 @@
 					<label for="installation_details">Installation Details</label>
 					<div class="right"><textarea id="installation_details" name="installation_details" rows="8" cols="" class="wysiwyg" disabled="disabled" ><?php echo set_value("installation_details", $return_rec->installation_details) ; ?></textarea></div>
 				</div>
-                
-                <!--<div class="row">
-					<label for="product_details">List of products being returned and their individual date codes</label>
-					<div class="right"><textarea id="product_details" name="product_details" rows="8" cols="" class="wysiwyg" disabled="disabled" ><?php // echo set_value("product_details", $return_rec->product_details) ; ?></textarea></div>
-				</div>-->
-				
 								
 				<input type="hidden" id="current_tr" name="current_tr" value="<?php echo $total_products + 1; ?>" />
 				<input type="hidden" id="current_num" name="current_num" value="<?php echo $total_products + 1 ; ?>" />

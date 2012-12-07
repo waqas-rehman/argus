@@ -16,12 +16,12 @@
                     <div class="row">
 						<label for="">Invoice Address</label>
 						<div class="right"><textarea id="invoice_address" name="invoice_address" rows="8" cols="" class="wysiwyg">
-						<?php echo set_value("invoice_address", ($customer_rec->company_name."<br />".$customer_rec->address_line_1."<br />".$customer_rec->address_line_2."<br />".$customer_rec->city."<br />".$customer_rec->country."<br />".$customer_rec->post_code)) ; ?></textarea></div>
+						<?php echo set_value("invoice_address", ($customer_rec->company_name."<br />".$customer_rec->address_line_1."<br />".$customer_rec->address_line_2."<br />".$customer_rec->city."<br />".$customer_rec->county."<br />".$customer_rec->post_code."<br />".$customer_rec->country)) ; ?></textarea></div>
 					</div>
                     
                     <div class="row">
 						<label>Delivery Address</label>
-						<div class="right"><textarea id="delivery_address" name="delivery_address" rows="8" cols="" class="wysiwyg"><?php echo set_value("delivery_address", ($customer_rec->company_name."<br />".$customer_rec->address_line_1."<br />".$customer_rec->address_line_2."<br />".$customer_rec->city."<br />".$customer_rec->country."<br />".$customer_rec->post_code)) ; ?></textarea></div>
+						<div class="right"><textarea id="delivery_address" name="delivery_address" rows="8" cols="" class="wysiwyg"><?php echo set_value("delivery_address", ($customer_rec->company_name."<br />".$customer_rec->address_line_1."<br />".$customer_rec->address_line_2."<br />".$customer_rec->city."<br />".$customer_rec->county."<br />".$customer_rec->post_code."<br />".$customer_rec->country)) ; ?></textarea></div>
 					</div>
                     
 					<div class="row">

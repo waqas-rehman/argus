@@ -68,10 +68,10 @@
 							<td><?php echo $rec->product_group ; ?></td>
 							<td><?php echo $rec->product_name ; ?></td>
 							<td><?php echo $rec->product_quantity ; ?></td>
-                            <td><?php echo number_format($rec->product_price, 2 , ".", ",") ; ?></td>
+                            <td><?php echo get_decimal_number_format($rec->product_price) ; ?></td>
                             <td>
 							<?php
-                            	echo number_format (($rec->product_price) * ($rec->product_quantity), 2 , ".", ",") ;
+                            	echo get_decimal_number_format($rec->product_price) * ($rec->product_quantity)) ;
 								$temp_sub_total = $temp_sub_total + floatval(($rec->product_price) * ($rec->product_quantity)) ;
 								$temp_vat_tax = $temp_vat_tax + floatval((($rec->vat_rate)/100) * ($rec->product_price) * ($rec->product_quantity)) ;
 							?>
@@ -86,14 +86,14 @@
                                 	$transport_charges = 0 ;
 									if($temp_sub_total <= $customer_rec->maximum_limit)
 										$transport_charges = $customer_rec->transport_charges ;
-									echo number_format($transport_charges, 2, ".", ",") ;
+									echo get_decimal_number_format($transport_charges) ;
 								?>
                            </td>
                         </tr>
                         
                         <tr id="last2">
                         	<td colspan="4" style="text-align:right !important;">Sub Total Amount: </td>
-                            <td id="sub_total"><?php echo number_format(($temp_sub_total), 2 , ".", ",") ; ?></td>
+                            <td id="sub_total"><?php echo get_decimal_number_format($temp_sub_total) ; ?></td>
                       	</tr>
                         
                         <tr id="last3">
@@ -103,12 +103,12 @@
                         
                         <tr id="last4">
                         	<td colspan="4" style="text-align:right !important;">VAT</td>
-                            <td id="sub_total_vat"><?php echo number_format(($temp_vat_tax), 2 , ".", ",") ; ?></td>
+                            <td id="sub_total_vat"><?php echo get_decimal_number_format($temp_vat_tax) ; ?></td>
                         </tr>
                         
                         <tr id="last6">
                         	<td colspan="4" style="text-align:right !important;">Total</td>
-                            <td id="total_plus_vat"><?php echo number_format($temp_vat_tax  + $temp_sub_total, 2, ".", ",") ;  ?></td>
+                            <td id="total_plus_vat"><?php echo get_decimal_number_format($temp_vat_tax  + $temp_sub_total) ;  ?></td>
                         </tr>
                     </tbody>
 				</table>

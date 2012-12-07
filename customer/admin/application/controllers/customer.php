@@ -71,9 +71,10 @@ class Customer extends CI_Controller
 			$this->form_validation->set_rules("address_line_1", "Address Line 1", "required") ;
 			$this->form_validation->set_rules("address_line_2", "Address Line 2", "required") ;
 			$this->form_validation->set_rules("city", "City", "required") ;
-			$this->form_validation->set_rules("country", "Country", "required") ;
+			$this->form_validation->set_rules("county", "County", "required") ;
 			
 			$this->form_validation->set_rules('post_code', 'Post Code', 'required') ;
+			$this->form_validation->set_rules("country", "Country", "required") ;
 			$this->form_validation->set_rules('status', 'Status', 'required') ;
 			$this->form_validation->set_rules('username', 'Usernmae', 'required|is_unique[user_logins.username]') ;
 			//$this->form_validation->set_rules('password', 'Password', 'required') ;
@@ -104,9 +105,10 @@ class Customer extends CI_Controller
 				$param1["address_line_1"] = mysql_real_escape_string($this->input->post("address_line_1")) ;
 				$param1["address_line_2"] = mysql_real_escape_string($this->input->post("address_line_2")) ;
 				$param1["city"] = mysql_real_escape_string($this->input->post("city")) ;
-				$param1["country"] = mysql_real_escape_string($this->input->post("country")) ;
+				$param1["county"] = mysql_real_escape_string($this->input->post("county")) ;
 				
 				$param1["post_code"] = mysql_real_escape_string($this->input->post("post_code")) ;
+				$param1["country"] = mysql_real_escape_string($this->input->post("country")) ;
 				$param1["special_prices"] = mysql_real_escape_string($this->input->post("special_prices")) ;
 				$param1["vat_code"] = mysql_real_escape_string($this->input->post("vat_code")) ;
 				$param1["creation_date"] = date("Y-m-d G:i:s") ;
@@ -267,9 +269,10 @@ class Customer extends CI_Controller
 			$this->form_validation->set_rules("address_line_1", "Address Line 1", "required") ;
 			$this->form_validation->set_rules("address_line_2", "Address Line 2", "required") ;
 			$this->form_validation->set_rules("city", "City", "required") ;
-			$this->form_validation->set_rules("country", "Country", "required") ;
+			$this->form_validation->set_rules("county", "County", "required") ;
 			
 			$this->form_validation->set_rules('post_code', 'Post Code', 'required') ;
+			$this->form_validation->set_rules("country", "Country", "required") ;
 			$this->form_validation->set_rules('status', 'Status', 'required') ;
 			
 			$this->form_validation->set_rules('maximum_limit', 'Maximum Limit', 'required|decimal') ;
@@ -309,9 +312,10 @@ class Customer extends CI_Controller
 				$param1["address_line_1"] = mysql_real_escape_string($this->input->post("address_line_1")) ;
 				$param1["address_line_2"] = mysql_real_escape_string($this->input->post("address_line_2")) ;
 				$param1["city"] = mysql_real_escape_string($this->input->post("city")) ;
-				$param1["country"] = mysql_real_escape_string($this->input->post("country")) ;
+				$param1["county"] = mysql_real_escape_string($this->input->post("county")) ;
 				
 				$param1["post_code"] = mysql_real_escape_string($this->input->post("post_code")) ;
+				$param1["country"] = mysql_real_escape_string($this->input->post("country")) ;
 				$param1["creation_date"] = date("Y-m-d G:i:s") ;
 				$param1["update_date"] = date("Y-m-d G:i:s") ;
 				$param1["status"] = mysql_real_escape_string($this->input->post("status")) ;
