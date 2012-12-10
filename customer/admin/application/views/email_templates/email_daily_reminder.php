@@ -20,21 +20,33 @@
             <tr>
               <td width="656" height="200" align="left" valign="top" style="font-family:Arial, Helvetica, sans-serif; color:#4e4e4e; font-size:13px; padding:10px;">
             <strong>Dear <?php echo $contact_person_name; ?>,</strong>
-                                                                <p> your account is overdue since <?php echo $difference;?> days.</p></td>
+                                                                <p> your account is overdue since <?php echo $difference;?> day(s).</p></td>
               <td width="172" align="left" valign="top" style="font-family:Arial, Helvetica, sans-serif; color:#4e4e4e; font-size:13px; padding:10px;">
               
+              </td>
+                  </tr>
+                </table>
+               <table width="100%" border="0" align="Right" cellpadding="0" cellspacing="0" style="margin-bottom:15px;">
+            <tr>
+              <td width="656" height="200" align="left" valign="top" style="font-family:Arial, Helvetica, sans-serif; color:#4e4e4e; font-size:13px; padding:10px;">
+            <strong>Kind regards,</strong>
+                                                                <p>Argus Distribution Limited
+</p></td>
+              <td width="172" align="left" valign="top" style="font-family:Arial, Helvetica, sans-serif; color:#4e4e4e; font-size:13px; padding:10px;">
+			  
               <table width="75%" border="0" cellspacing="0" cellpadding="4">
                 <tr>
-                  <td align="left" valign="top" style="font-family:Verdana, Geneva, sans-serif; font-size:14px; color:#000000;"><b>Follow Us On</b></td>
+                  <td align="left" valign="top" style="font-family:Verdana, Geneva, sans-serif; font-size:14px; color:#000000;"></td>
                   </tr>
                 <tr>
                   <td align="left" valign="top" style="font-family:Verdana, Geneva, sans-serif; font-size:12px; color:#000000;"><table width="100%" border="0" cellspacing="0" cellpadding="0">
                     <tr>
-                      <td width="33%" align="left" valign="middle"><img src="<?php echo base_url() ; ?>img/tweeter.png" width="48" height="48"></td>
-                      <td width="34%" align="left" valign="middle"><img src="<?php echo base_url() ; ?>img/myspace.png" width="48" height="48"></td>
-                      <td width="33%" align="left" valign="middle"><img src="<?php echo base_url() ; ?>img/facebook.png" width="48" height="48"></td>
+                      <td width="33%" align="left" valign="middle"></td>
+                      <td width="34%" align="left" valign="middle"></td>
+                      <td width="33%" align="left" valign="middle"></td>
                       </tr>
-                    </table></td>
+					  </table>
+                    </td>
                   </tr>
                 </table>
               

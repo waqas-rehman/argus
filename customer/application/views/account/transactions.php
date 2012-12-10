@@ -10,7 +10,7 @@
             <table cellspacing="0" cellpadding="0" border="0"> 
             	<thead> 
                 	<tr>
-                    	<th>Id</th>
+                    	
                         <th>Invoice No.</th>
                         <th>PO Num.</th>
                         <th>Type</th>
@@ -24,7 +24,7 @@
 					$global_amount = $global_amount + $rec1->invoice_amount ;
 				?>
 					<tr>
-                        <td><?php echo $rec1->id ; ?></td>
+                        
                         <td><a style="text-decoration:none;" href="<?php echo base_url("invoices") ; ?>"><?php echo $rec1->id ; ?></a></td>
                         <td><?php echo $rec1->purchase_order_number ; ?></td>
                         <td>Invoice</td>
@@ -36,7 +36,7 @@
 					if($transactions) { foreach($transactions as $rec):
 				?>
                     <tr>
-                        <td><?php echo $rec->id ; ?></td>
+                        
                         <td><a style="text-decoration:none;" href="<?php echo base_url("orders/general_order_details/".$rec->order_id) ; ?>"><?php echo $rec->order_id ; ?></a></td>
                         <td><?php echo $rec->purchase_order_number ; ?></td>
                         <td>
