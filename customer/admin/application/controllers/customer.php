@@ -129,17 +129,9 @@ class Customer extends CI_Controller
 				$param2["user_type"] =  "customer" ;
 				$login_rec_id = $this->model1->insert_rec($param2, "user_logins") ;
 				$this->load->library('encrypt');
-				if(($rec_id) && ($login_rec_id)) {
-										//$this->load->helper('MY_Encrypt');
-					$email_data["user_id"] = url_base64_encode($rec_id);
-					
-					$email_data["client_name"] = $param1["company_name"] ;
-					$email_data["contact_person_name"] = $param1["contact_person_name"] ;
-					$email_data["username"] = $param2["username"] ;
-					//$email_data["password"] = mysql_real_escape_string($this->input->post("password")) ;
-					$email_message = $this->load->view("email_templates/customer_registration", $email_data, TRUE) ;
-					
-					send_email_message("Argus Distribution", $param1["email_address"], 0, 0, "Argus Distribution Registration", $email_message,0) ;
+				if(($rec_id) && ($login_rec_id))
+				{
+					$this->send_registration_email($rec_id) ;
 					if($param1["special_prices"] == "Yes") {
 						redirect(base_url("customer/customer_products/".$rec_id."/2")) ;
 					} else {
@@ -160,6 +152,23 @@ class Customer extends CI_Controller
 		
 		else
 			redirect(base_url("customer")) ;
+	}
+	
+	public function send_registration_email($user_id, $msg = 0)
+	{
+		$customer_rec = $this->model1->get_one(array("id" => $user_id), "customers") ;
+		$customer_login_rec = $this->model1->get_one(array("user_id" => $user_id), "user_logins") ;
+		
+		$email_data["user_id"] = url_base64_encode($user_id);
+		$email_data["client_name"] = ($customer_rec->company_name) ;
+		$email_data["contact_person_name"] = $customer_rec->contact_person_name ;
+		$email_data["username"] = $customer_login_rec->username ;
+		
+		$email_message = $this->load->view("email_templates/customer_registration", $email_data, TRUE) ;
+					
+		if(send_email_message("Argus Distribution", $customer_rec->email_address, 0, 0, "Argus Distribution Registration", $email_message,0)) echo "yahoo" ;
+		exit ;
+		return true ;
 	}
 	
 	public function customer_products($customer_id = 0 , $msg = 0) 
