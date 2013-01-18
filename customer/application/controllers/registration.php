@@ -1,26 +1,21 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class registration extends CI_Controller
+class Registration extends CI_Controller
 {
 	public function __construct()
 	{
 		parent::__construct() ;
 		$this->load->helper('url') ;
-		
 	}
 	
 	
-	public function index($msg = 0)
+	public function index($user_id, $msg = 0)
 	{
-	
 		$this->load->library('encrypt');
 		
-			$data["msg"] = $msg ;
-			$user_data3 = mysql_real_escape_string($_GET['id']);
-			
-			$data['user_id'] = url_base64_decode($user_data3);
-			$this->load->view("login/change_password", $data) ;
-			
+		$data["msg"] = $msg ;
+		$data['user_id'] = url_base64_decode($user_id) ;
+		$this->load->view("login/change_password", $data) ;	
  	}
 
 	public function update_password()

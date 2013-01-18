@@ -29,8 +29,8 @@
 																<p> Your user name is: <?php echo $username; ?></p>
 																<br />
                                                                 
-                                                                
-                                                            	<p><a href="<?php echo "http://portal.argusdistribution.co.uk/registration?id= $user_id"?>">Click here</a> to Change your login password.</p>
+                                                                <?php $link = str_replace("/admin", "", base_url("registration/index/".$user_id)); ?>
+                                                            	<p><a href="<?php echo $link ; ?>">Click here</a> to Change your login password.</p>
               <td width="172" align="left" valign="top" style="font-family:Arial, Helvetica, sans-serif; color:#4e4e4e; font-size:13px; padding:10px;">
               </td></div></strong></td></tr></table>
 			  

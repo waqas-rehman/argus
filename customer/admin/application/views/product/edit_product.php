@@ -35,8 +35,10 @@
                 <form id="product_details_form" class="block-content form" action="<?php echo base_url("product/update_product") ; ?>" method="post" enctype="multipart/form-data">
                 	<fieldset>
                     	<legend>Product Description</legend>
-						<input type="hidden" name="product_id" id="product_id" value="<?php echo $product_rec->id ; ?>" />
-						<div class='_50'><p><label for="product_name">Product Name</label><input type="text" id="product_name" name="product_name" value="<?php echo $product_rec->product_name ; ?>" /></p></div>
+						
+                        <input type="hidden" name="product_id" id="product_id" value="<?php echo $product_rec->id ; ?>" />
+						
+                        <div class='_50'><p><label for="product_name">Product Name</label><input type="text" id="product_name" name="product_name" value="<?php echo $product_rec->product_name ; ?>" /></p></div>
                         
 						<div class='_50'><p><label for="product_code">Product Code</label><input type="text" id="product_code" name="product_code" value="<?php  echo $product_rec->product_code ; ?>" /></p></div>
                         
@@ -54,7 +56,7 @@
 										{
 											foreach($product_groups as $rec): ?>
 												<option value="<?php echo $rec->id ; ?>" <?php set_select("product_group", $rec->id) ; ?> <?php if($current_product_group->id == $rec->id) echo 'selected="selected"' ; ?>><?php echo $rec->group_name ; ?></option>
-									<?		endforeach ; 
+									<?php 	endforeach ; 
 										}
 									?>
 								</select>

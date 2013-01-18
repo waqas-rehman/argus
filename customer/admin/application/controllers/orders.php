@@ -5,14 +5,12 @@ class Orders extends CI_Controller
 	public function __construct()
 	{
 		parent::__construct() ;
-		
 		if( !($this->session->userdata("admin_logged_in")) )
 			redirect(base_url("home")) ;
 	}
 	
 	public function index($msg = 0)
 	{
-		
 		$cond1["type"] = "order" ;
 		$data["orders"] = $this->model1->get_all_cond($cond1, "orders") ;
 		
@@ -20,10 +18,246 @@ class Orders extends CI_Controller
 		$data["session_data"] = $this->get_session_data() ;
 		$data["view"] = "orders/index" ;
 		$this->load->view("template/body", $data) ;
-		
-					
-	
 	}
+	
+	public function add_order($customer_id, $msg = 0) 
+	{
+		if($customer_id)
+		{
+			$data["customer_rec"] = $this->model1->get_one(array("id" => $customer_id), "customers") ;
+			$data["product_groups"] = $this->model1->get_all_cond(array("status" => "Active"), "product_groups") ;
+			$data["vat_rec"] = $this->model1->get_one(array("id" => $data["customer_rec"]->vat_code), "vat_codes") ;
+			
+			$data["msg"] = $msg ;
+			$data["session_data"] = $this->get_session_data() ;
+			$data["view"] = "orders/add_order" ;
+			$this->load->view("template/body", $data) ;
+		} else
+			redirect(base_url("customer")) ;
+	}
+	
+	public function insert_complete_order()
+	{
+		if($_POST)
+		{
+			$param = post_function(array("type" => "order",
+										 "customer_id" => "customer_id",
+										 "purchase_order_number" => "purchase_order_number",
+										 "invoice_address" => "invoice_address",
+										 "delivery_address" => "delivery_address",
+										 "order_description" => "order_description",
+										 "status" => "order_status",
+										 "order_file_radio" => "upload_order_file")) ;
+			
+			if(post_function("upload_order_file") == "Yes")
+			{
+				$temp_order = upload_file("order_file", "order_files") ;
+				$param["order_file"] = $temp_order["encripted_file_name"] ;
+			}
+			
+			if(post_function("upload_invoice_file") == "Yes")
+			{
+				$temp_invoice = upload_file("invoice_file", "order_invoices") ;
+				$param["invoice"] = $temp_invoice["encripted_file_name"] ;
+			}
+			
+			$temp_param = $this->date_function($param["status"]) ;
+			
+			$param["creation_date"] = $temp_param["creation_date"] ;
+			$param["order_date"] = $temp_param["order_date"] ;
+			$param["acceptance_date"] = $temp_param["acceptance_date"] ;
+			$param["shipment_date"] = $temp_param["shipment_date"] ;
+			$param["invoice_date"] = $temp_param["invoice_date"] ;
+			$param["outstanding_date"] = $temp_param["outstanding_date"] ;
+			$param["compeletion_date"] = $temp_param["compeletion_date"] ;
+			$param["type"] = "order" ;
+			
+			$order_id = $this->model1->insert_rec($param, "orders") ;
+		
+			$ids = mysql_real_escape_string($this->input->post("current_tr")) ; 
+			$vat_rate = floatval(mysql_real_escape_string($this->input->post("vat_rate"))) ;
+			$num_of_records = mysql_real_escape_string($this->input->post("current_num")) ;
+			
+			$sub_total = floatval(mysql_real_escape_string($this->input->post("sub_total_hidden"))) ;
+			$vat_total = floatval(mysql_real_escape_string($this->input->post("vat_total_hidden"))) ;
+			
+			$product_group = $this->input->post("product_group") ;
+			$products = $this->input->post("products") ;
+			$product_quantity = $this->input->post("product_quantity") ;
+			
+			$temp_sub_total = 0 ;
+			$temp_vat_total = 0 ;
+			
+			$cond_delete["order_id"] = $order_id ;
+			$this->model1->delete_rec($cond_delete, "order_products") ;
+			
+			if($num_of_records > 0)
+			{
+				if($products)
+				{
+					$i = 0 ;
+					$arr = array() ;
+					foreach($products as $rec => $val):
+						$arr = explode("|", $val) ;
+						
+						$gr_pr_rec = $this->model2->get_group_product_name1($product_group[$i], intval($arr[0])) ;
+						$param1["order_id"] = $order_id ;
+						
+						$param1["product_group_id"] = $product_group[$i] ;
+						$param1["product_group"] = $gr_pr_rec->group_name ;
+						$param1["product_id"] = $arr[0] ;
+						$param1["product_name"] = $gr_pr_rec->product_name ;
+						$param1["product_code"] = $gr_pr_rec->product_code ;
+						$param1["product_adl_code"] = $gr_pr_rec->adl_code ;
+						$param1["product_quantity"] = intval($product_quantity[$i]) ;
+						$param1["product_price"] = floatval($arr[1]) ;
+						$param1["vat_rate"] = $vat_rate ;
+						
+						if($param1["product_quantity"] > 0)
+							$order_rec = $this->model1->insert_rec($param1, "order_products") ;
+						
+						$temp_sub_total = $temp_sub_total + ($param1["product_price"] * $param1["product_quantity"]) ;
+						$temp_vat_total = $temp_vat_total + (($param1["vat_rate"]/100) * $param1["product_price"] * $param1["product_quantity"]) ;
+						
+						$i = $i + 1 ;
+					endforeach ;
+				}
+			}
+			
+			if($param["status"] == "Outstanding" || $param["status"] == "Invoiced" && $param["status"] == "Completed")
+				$this->calculate_invoice($order_id, $param["customer_id"]) ;
+			
+			$customer_rec = $this->model1->get_one(array("id" => $param["customer_id"]), "customers") ;
+			
+			if($customer_rec->registration_email_sent == "Yes")
+			{
+				$customer_id = $param["customer_id"] ;
+				
+				$data["orders_prod"] = $this->model1->get_one(array("order_id" => $order_id), "order_products") ;
+				
+				$data["customer_rec"] = $this->model1->get_one(array("id" => $customer_id), "customers") ;
+				
+				$data["orders_rec"] = $this->model1->get_one(array("id" => $order_id), "orders") ;
+				
+					
+				$cond22["order_id"] = $order_id ;
+				$email_data["products_rec"] = $this->model1->get_all_cond($cond22, "order_products") ;
+					
+				$cond23["id"] = $customer_id ;
+				$email_data["customer_rec"] = $this->model1->get_one($cond23, "customers") ;
+					
+				$cond33["id"] = $email_data["customer_rec"]->vat_code ; 
+				$email_data["vat_rec"] = $this->model1->get_one($cond33, "vat_codes") ;
+					
+				$email_data["delivery_address"] = $data["orders_rec"]->delivery_address;
+				$email_data["creation_date"] = $data["orders_rec"]->creation_date ;
+				$email_data["product_group"] = $data["orders_prod"]->product_group ;
+				
+				$email_data["product_name"] = $data["orders_prod"]->product_name ;
+				
+				$email_data["product_quantity"] = $data["orders_prod"]->product_quantity ;
+				$email_data["product_price"] = $data["orders_prod"]->product_price ;
+				$email_data["po_number"] = $data["orders_rec"]->purchase_order_number;
+					
+				$email_data["client_name"] = $data["customer_rec"]->company_name;
+				$email_data["contact_person_name"] = $data["customer_rec"]->contact_person_name;
+				$param3["email_address"] = $data["customer_rec"]->email_address;
+					
+				$email_message = $this->load->view("email_templates/email_order_rec", $email_data, TRUE) ;
+				if($data["customer_rec"]->registration_email_sent == "Yes")
+					send_email_message("Argus Distribution", $param3["email_address"], "sales@argusdistribution.co.uk", 0, "Order Confirmation", $email_message, 0) ;
+			}
+			
+			if($param["status"] == "Completed")
+			{	
+				$total_order_rec = $this->model1->get_one(array("id" => $order_id), "orders") ;
+				$tparam["order_id"] = post_function("customer_id") ;
+				$tparam["customer_id"] = $order_id ;
+				$tparam["transaction_type"] = "Payment" ;
+				$tparam["transaction_amount"] = $total_order_rec->invoice_amount ;
+				$tparam["timestamp"] = date("Y-m-d H:i:s") ;
+				
+				$transaction_id = $this->model1->insert_rec($tparam, "transactions") ;
+			}
+			/**/
+			redirect(base_url("orders")) ;
+		}
+		else
+			redirect(base_url("customer")) ;
+	}
+	
+	
+	private function date_function($status)
+	{
+		$param = array() ;
+		
+		$param["creation_date"] = "0000-00-00 00:00:00" ; 
+		$param["order_date"] = "0000-00-00 00:00:00" ;
+		$param["acceptance_date"] = "0000-00-00 00:00:00" ;
+		$param["shipment_date"] = "0000-00-00 00:00:00" ;
+		$param["invoice_date"] = "0000-00-00 00:00:00" ;
+		$param["outstanding_date"] = "0000-00-00 00:00:00" ;
+		$param["compeletion_date"] = "0000-00-00 00:00:00" ;
+		
+		if($status == "Pending")
+		{
+			$param["creation_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("creation_date"))." ".date("H:i:s"))) ;
+		}
+		
+		if($status == "Ordered")
+		{
+			$param["creation_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("creation_date"))." ".date("H:i:s"))) ;
+			$param["order_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("order_date"))." ".date("H:i:s"))) ;
+		}
+		
+		if($status == "Accepted")
+		{
+			$param["creation_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("creation_date"))." ".date("H:i:s"))) ;
+			$param["order_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("order_date"))." ".date("H:i:s"))) ;
+			$param["acceptance_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("acceptance_date"))." ".date("H:i:s"))) ;
+		}
+		
+		if($status == "Shiped")
+		{
+			$param["creation_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("creation_date"))." ".date("H:i:s"))) ;
+			$param["order_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("order_date"))." ".date("H:i:s"))) ;
+			$param["acceptance_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("acceptance_date"))." ".date("H:i:s"))) ;
+			$param["shipment_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("shipment_date"))." ".date("H:i:s"))) ;
+		}
+		
+		if($status == "Invoiced")
+		{
+			$param["creation_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("creation_date"))." ".date("H:i:s"))) ;
+			$param["order_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("order_date"))." ".date("H:i:s"))) ;
+			$param["acceptance_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("acceptance_date"))." ".date("H:i:s"))) ;
+			$param["shipment_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("shipment_date"))." ".date("H:i:s"))) ;
+			$param["invoice_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("invoice_date"))." ".date("H:i:s"))) ;
+		}
+		
+		if($status == "Outstanding")
+		{
+			$param["creation_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("creation_date"))." ".date("H:i:s"))) ;
+			$param["order_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("order_date"))." ".date("H:i:s"))) ;
+			$param["acceptance_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("acceptance_date"))." ".date("H:i:s"))) ;
+			$param["shipment_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("shipment_date"))." ".date("H:i:s"))) ;
+			$param["invoice_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("invoice_date"))." ".date("H:i:s"))) ;
+			$param["outstanding_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("outstanding_date"))." ".date("H:i:s"))) ;
+		}
+			
+		if($status == "Completed")
+		{
+			$param["creation_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("creation_date"))." ".date("H:i:s"))) ;
+			$param["order_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("order_date"))." ".date("H:i:s"))) ;
+			$param["acceptance_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("acceptance_date"))." ".date("H:i:s"))) ;
+			$param["shipment_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("shipment_date"))." ".date("H:i:s"))) ;
+			$param["invoice_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("invoice_date"))." ".date("H:i:s"))) ;
+			$param["outstanding_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("outstanding_date"))." ".date("H:i:s"))) ;
+			$param["compeletion_date"] = date("Y-m-d H:i:s", strtotime(str_replace("/", "-", post_function("compeletion_date"))." ".date("H:i:s"))) ;
+		}
+		
+		return $param ;
+	}
+	
 	public function remove_order($order_id = 0)
 	{
 		if($order_id)
@@ -90,75 +324,82 @@ class Orders extends CI_Controller
 			
 			$rec_id = $this->model1->update_rec($param1, $cond1, "orders") ;
 			
-			// email started.
-				
-				 
-				if($rec_id) {
-				
+			if($rec_id)
+			{
 				$cond2["customer_record"] = $this->model1->get_one($cond1, "orders") ;
-				$id2["id"] = $cond2["customer_record"]->customer_id;
+				$id2["id"] = $cond2["customer_record"]->customer_id ;
 				
-				$order_file["order_file"] = $cond2["customer_record"]->order_file;
-				
+				$order_file["order_file"] = $cond2["customer_record"]->order_file ;
 				
 				$data["customer_rec"] = $this->model1->get_one($id2, "customers") ;
 				
+				$email_data["client_name"] = $data["customer_rec"]->company_name;
+				$email_data["contact_person_name"] = $data["customer_rec"]->contact_person_name;
+				$email_data["order_status"] = $cond2["customer_record"]->status;
 				
+				$param3["email_address"] = $data["customer_rec"]->email_address;
 				
+				$email_data["insert_text"] = mysql_real_escape_string($this->input->post("email_data")) ;
+				
+				if ($email_data["order_status"] == "Ordered")
+				{
+					$email_data["payment_status"] = "Your order status has been changed to Ordered.";
+					$email_message = $this->load->view("email_templates/email_status_customer", $email_data , TRUE) ;
 					
-					$email_data["client_name"] = $data["customer_rec"]->company_name;
-					$email_data["contact_person_name"] = $data["customer_rec"]->contact_person_name;
-					$email_data["order_status"] = $cond2["customer_record"]->status;
-					$param3["email_address"] = $data["customer_rec"]->email_address;
-					
-					$email_data["insert_text"] = mysql_real_escape_string($this->input->post("email_data")) ;
-					
-					if ($email_data["order_status"] == "Completed"){
-					$email_data["payment_status"] = "Payment has been registered on your account";
-					
-					$email_message = $this->load->view("email_templates/email_status_customer", $email_data, TRUE) ;
-					send_email_message("Argus Distribution", $param3["email_address"], 0, 0, "Statuse has been Changed", $email_message,0) ;
-				}
-				if ($email_data["order_status"] == "Ordered"){
-					$email_data["payment_status"] = "Your order statues has been changed to Ordered.";
-					
-					$email_message = $this->load->view("email_templates/email_status_customer", $email_data, TRUE) ;
-					send_email_message("Argus Distribution", $param3["email_address"], 0, 0, "Statuse has been Changed", $email_message,0) ;
+					if($data["customer_rec"]->registration_email_sent == "Yes")
+						send_email_message("Argus Distribution", $param3["email_address"], 0, 0, "Order Status: Ordered", $email_message,0) ;
 				}
 				
-				if ($email_data["order_status"] == "Shipped"){
-					//$email_data["payment_status"] = "Your order statues has been changed to Shipped.";
-					
-					$email_message = $this->load->view("email_templates/email_status_shiped", $email_data, TRUE) ;
-					send_email_message("Argus Distribution", $param3["email_address"], 0, 0, "Your order has been shipped", $email_message,0) ;
-				}
-				if ($email_data["order_status"] == "Accepted"){
+				if ($email_data["order_status"] == "Accepted")
+				{
 					$email_data["payment_status"] = "This email is to confirm that your order has been accepted. You will receive another email to confirm when the order has been shipped. This will also contain your estimated delivery date.";
+					$email_message = $this->load->view("email_templates/email_status_customer", $email_data, TRUE) ;
+					
+					if($data["customer_rec"]->registration_email_sent == "Yes")
+						send_email_message("Argus Distribution", $param3["email_address"], 0, 0, "Order Status: Accepted", $email_message,0) ;
+				}
+				
+				if ($email_data["order_status"] == "Shipped")
+				{
+					$email_message = $this->load->view("email_templates/email_status_shiped", $email_data, TRUE) ;
+					
+					if($data["customer_rec"]->registration_email_sent == "Yes")
+						send_email_message("Argus Distribution", $param3["email_address"], 0, 0, "Order Status: Shipped", $email_message,0) ;
+				}
+				
+				if ($email_data["order_status"] == "Outstanding")
+				{
+					$email_data["payment_status"] = "<p>Thank you for your continued business. It is much appreciated.</p><p>Unfortunately the payment for Invoice No. ".$cond1["id"]." is now overdue and therefore your account has been disabled.</p><p>Please ensure that payment reaches us as soon as possible. Once the outstanding balance has been cleared, your account will be re-enabled.</p>" ;
 					
 					$email_message = $this->load->view("email_templates/email_status_customer", $email_data, TRUE) ;
-					send_email_message("Argus Distribution", $param3["email_address"], 0, 0, "Statuse has been Changed", $email_message,0) ;
-				}
-				if ($email_data["order_status"] == "Outstanding"){
-					$email_data["payment_status"] = "Your order statues has been changed to Outstanding.";
 					
+					if($data["customer_rec"]->registration_email_sent == "Yes")
+						send_email_message("Argus Distribution", $param3["email_address"], 0, 0, "Order Status: Outstanding", $email_message,0) ;
+				}
+				
+				if($email_data["order_status"] == "Completed")
+				{
+					$email_data["payment_status"] = "Payment has been registered on your account";
 					$email_message = $this->load->view("email_templates/email_status_customer", $email_data, TRUE) ;
-					send_email_message("Argus Distribution", $param3["email_address"], 0, 0, "Statuse has been Changed", $email_message,0) ;
-				}
 					
+					if($data["customer_rec"]->registration_email_sent == "Yes")
+						send_email_message("Argus Distribution", $param3["email_address"], 0, 0, "Order Status: Completed", $email_message,0) ;
+				}
 			
-			// email ended..
-			if($rec_id)
-			{
-				if($param1["status"] == "Invoiced") redirect(base_url("invoices/upload_invoice/".$cond1["id"])) ;
-				else redirect(base_url("orders/order_details/".$cond1["id"]."/14" )) ;
+				if($rec_id)
+				{
+					if($param1["status"] == "Invoiced") redirect(base_url("invoices/upload_invoice/".$cond1["id"])) ;
+					else redirect(base_url("orders/order_details/".$cond1["id"]."/14" )) ;
+				}
+			
+				else
+					redirect(base_url("orders/order_details/".$cond1["id"]."/5" )) ;
 			}
-			
-			else redirect(base_url("orders/order_details/".$cond1["id"]."/5" )) ;
-			
-		} else
+		}
+		else
 			redirect(base_url("orders")) ;
 	}
-	}
+	
 	private function calculate_invoice($order_id, $customer_id)
 	{
 		$cond1["order_id"] = $order_id ;
@@ -179,7 +420,6 @@ class Orders extends CI_Controller
 		
 		if($order_products)
 		{
-			/* id	order_id	product_group_id	product_group	product_id	product_name	product_quantity	product_price	vat_rate /**/
 			foreach($order_products as $rec):
 				$products_total = $products_total + (floatval($rec->product_price) * intval($rec->product_quantity)) ;
 				$products_total_vat = $products_total_vat + (floatval($rec->product_price) * intval($rec->product_quantity)) + (floatval($rec->product_price) * intval($rec->product_quantity) * (floatval($rec->vat_rate)/100)) ;
@@ -235,10 +475,6 @@ class Orders extends CI_Controller
 			redirect(base_url("orders")) ;
 	}
 	
-	private function get_session_data()
-	{
-	}
-	
 	private function get_file_extention($order_id = 0)
 	{
 		$cond1["id"] = $order_id ;
@@ -256,8 +492,7 @@ class Orders extends CI_Controller
 		if($order_rec->order_file != "")
 		{
 			$result = unlink("./order_files/".$order_rec->order_file);
-	 
-			if($result)
+	 		if($result)
 			{
 				$param1["order_file"] = "" ;
 				$this->model1->update_rec($param1, $cond1, "orders") ;
@@ -265,7 +500,8 @@ class Orders extends CI_Controller
 			}
 			else
 				return false ;
-		} else
+		}
+		else
 			return true ;
 	}
 	
@@ -297,7 +533,6 @@ class Orders extends CI_Controller
 		{
 			$success = $this->delete_order_file($order_id) ; 
 			if($success) redirect(base_url("orders/edit_order_file/".$order_id)) ;
-			
 		} else
 			redirect(base_url("orders")) ;
 	}
@@ -476,8 +711,8 @@ class Orders extends CI_Controller
 				
 			if($rec_id) redirect(base_url("orders/order_details/".$cond1["id"]."/12" )) ;
 			else redirect(base_url("orders/order_details/".$cond1["id"]."/5" )) ;
-				
-		} else
+		}
+		else
 			redirect(base_url("")) ;
 	}
 	
@@ -492,8 +727,7 @@ class Orders extends CI_Controller
 			
 			$data["file_ext"] = "" ;
 			
-			if($data["order_rec"]->order_file != "")
-				$data["file_ext"] = $this->get_file_extention($order_id) ;
+			if($data["order_rec"]->order_file != "") $data["file_ext"] = $this->get_file_extention($order_id) ;
 			
 			$data["msg"] = 0 ;
 			
@@ -503,9 +737,9 @@ class Orders extends CI_Controller
 			$data["msg"] = 0 ;
 			$data["session_data"] = $this->get_session_data() ;
 			$data["view"] = "orders/edit_order_file" ;
-			$this->load->view("template/body", $data) ;	
-			
-		} else
+			$this->load->view("template/body", $data) ;
+		}
+		else
 			redirect(base_url("orders")) ;
 	}
 	
@@ -513,8 +747,6 @@ class Orders extends CI_Controller
 	{
 		if($_POST)
 		{
-			
-			
 			$config['upload_path'] =  "./order_files/" ;
 			$config['allowed_types'] = "gif|jpg|png|pdf|doc|docx|xls|xlsx|ppt|pptx|txt";
 			$config['max_size']	= '10240';
@@ -524,7 +756,6 @@ class Orders extends CI_Controller
 			$this->load->library('upload', $config);
 	
 			$cond1["id"] = mysql_real_escape_string($this->input->post("order_id")) ;
-			
 			
 			if (!($this->upload->do_upload("order_file")))
 			{
@@ -538,8 +769,7 @@ class Orders extends CI_Controller
 				
 				$data["file_ext"] = "" ;
 				
-				if($data["order_rec"]->order_file != "")
-					$data["file_ext"] =$this->get_file_extention(mysql_real_escape_string($this->input->post("order_id"))) ;
+				if($data["order_rec"]->order_file != "")	$data["file_ext"] =$this->get_file_extention(mysql_real_escape_string($this->input->post("order_id"))) ;
 				 
 				$cond2["id"] = $data["order_rec"]->customer_id ;
 				$data["customer_rec"] = $this->model1->get_one($cond2, "customers") ;
@@ -556,31 +786,23 @@ class Orders extends CI_Controller
 					$param1["order_file"] = $data["file_data"]["file_name"] ;
 					$this->model1->update_rec($param1, $cond1, "orders") ;
 					$data["msg"] = 4 ;
-
-					redirect(base_url("orders/order_details/".$cond1["id"]."/13"));
-					
-					 
-				}
-				else
-				{
+					redirect(base_url("orders/order_details/".$cond1["id"]."/13")) ;
+				} else {
 					$param1["order_file"] = "" ;
 					$this->model1->update_rec($param1, $cond1, "orders") ;
 					$data["msg"] = 5 ;
 				}
-				
 			}
 			
-		} else
+		}
+		else
 			redirect(base_url("orders")) ;
-			
-			
-			
 	}
 	
 	public function get_td_ajax()
 	{
-		if($_POST){
-			
+		if($_POST)
+		{
 			$td_num = mysql_real_escape_string($this->input->post("tr_number")) ;
 			$groups = $this->model1->get_all("product_groups") ;
 			
@@ -605,7 +827,8 @@ class Orders extends CI_Controller
 			echo '<td id="action_'.$td_num.'"><a id="'.$td_num.'" class="remove_record" href="javascript:void(0);"><img title="Remove Product" src="'. base_url("img/icons/packs/fugue/16x16/cross-script.png").'" /></a></td>' ;
 			echo '</tr>' ;
 			
-		} else
+		}
+		else
 			redirect(base_url("orders")) ;
 	}
 	
@@ -615,10 +838,10 @@ class Orders extends CI_Controller
 		{
 			$number = mysql_real_escape_string($this->input->post("number")) ;
 			$group_id = mysql_real_escape_string($this->input->post("group_id")) ;
+			$customer_id = mysql_real_escape_string($this->input->post("customer_id")) ;
 			if($group_id != "")
 			{
-				$products = $this->model2->get_products_ajax($group_id, $this->session->userdata("customer_id")) ;
-				
+				$products = $this->model2->get_products_ajax($group_id, $customer_id) ;
 				if($products)
 				{
 					echo '<select id="products'.$number.'" name="products[]" class="products_dropdown" number="'.$number.'">' ;
@@ -627,7 +850,7 @@ class Orders extends CI_Controller
 						$val = $rec->product_id."|" ;
 						if($rec->new_product_price != "") $val = $val.$rec->new_product_price ;
 						else $val = $val.$rec->product_price ;
-						echo '<option value="'.$val.'">'.$rec->product_name.'</option>' ;
+						echo '<option value="'.$val.'">'.$rec->adl_code.' - '.$rec->product_code.'</option>' ;
 					endforeach ;
 					echo '</select>' ;
 				} else {
@@ -639,9 +862,13 @@ class Orders extends CI_Controller
 				echo '</select>' ;
 			}
 			exit ;
-		} else
+		}
+		
+		else
 			redirect(base_url("orders")) ;
 	}
+	
+	private function get_session_data()
+	{}
 }
-
 ?>

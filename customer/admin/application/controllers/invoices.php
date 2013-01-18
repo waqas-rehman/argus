@@ -87,9 +87,6 @@ class Invoices extends CI_Controller
 				
 				if($param1["transaction_type"] == "Credit_Note" || $param1["transaction_type"] == "Payment")
 				{
-					//$param2["invoice_amount"] = floatval($order_rec->invoice_amount) - $param1["transaction_amount"] ; 
-					//$this->model1->update_rec($param2, $cond2, "orders") ;
-					
 					$param3["balance"] = floatval($customer_rec->balance) + $param1["transaction_amount"] ; 
 					$this->model1->update_rec($param3, $cond3, "customers") ;
 					
@@ -103,8 +100,6 @@ class Invoices extends CI_Controller
 					}
 					
 				} else {
-					//$param2["invoice_amount"] = floatval($order_rec->invoice_amount) + $param1["transaction_amount"] ; 
-					//$this->model1->update_rec($param2, $cond2, "orders") ;
 					
 					$param3["balance"] = floatval($customer_rec->balance) - $param1["transaction_amount"] ; 
 					$this->model1->update_rec($param3, $cond3, "customers") ;
@@ -244,10 +239,11 @@ class Invoices extends CI_Controller
 					$email_data["purchase_order_number"] = $data["order_rec"]->purchase_order_number;
 				
 			
-					$email_data["payment_status"] = "Please see the attached invoices for your recent order. PO Number:";
+					$email_data["payment_status"] = "Please see the attached invoice for your recent order. PO Number:";
 					
 					$email_message = $this->load->view("email_templates/email_status_invoiced", $email_data, TRUE) ;
-					send_email_message_invoicefile("Argus Distribution", $param3["email_address"], 0, 0, "Invoice", $email_message, $param1["invoice"]) ;
+					if($data["customer_rec"]->registration_email_sent == "Yes")
+						send_email_message_invoicefile("Argus Distribution", $param3["email_address"], 0, 0, "Order Status: Invoiced", $email_message, $param1["invoice"]) ;
 				
 				//end email
 	
@@ -338,6 +334,24 @@ class Invoices extends CI_Controller
 			
 		} else
 			redirect(base_url("invoices")) ;
+	}
+	
+	public function get_outstanding_date()
+	{
+		if($_POST)
+		{
+			$invoice_date = post_function("invoice_date") ;
+			$customer_id = post_function("customer_id") ;
+			 
+			$cond1["id"] = $customer_id ;
+			$customer_rec = $this->model1->get_one($cond1, "customers") ;
+			
+			$new_date = date('d/m/Y', strtotime($invoice_date. ' + '.intval($customer_rec->overdue_days).' days')) ;
+			
+			echo $new_date ;
+		}
+		else echo "fail" ; 
+		exit ;
 	}
 }
 ?>

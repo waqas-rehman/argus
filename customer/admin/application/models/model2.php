@@ -21,6 +21,21 @@ class Model2 extends CI_Model
 		else 
 			 return 0 ;
 	}
+	
+	public function get_group_product_name1($group_id, $product_id)
+	{
+		$q = "SELECT product_groups.group_name, products.product_name, products.product_code, products.adl_code FROM product_groups INNER JOIN products ON product_groups.id = products.group_id WHERE product_groups.id = ".$group_id." AND products.id = ".$product_id."" ;
+		
+		$query = $this->db->query($q);
+		
+		if ($query->num_rows() > 0)
+		{		
+			$query = $query->result() ;
+			return array_pop($query) ;
+		}
+		else 
+			 return 0 ;
+	}
 
 	public function get_group_product_name($group_id, $product_id)
 	{

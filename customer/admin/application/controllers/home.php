@@ -6,9 +6,7 @@ class Home extends CI_Controller
 	{
 		parent::__construct() ;
 	}
-	
-	
-	
+
 	public function index($error = 0)
 	{
 		if($this->session->userdata("admin_logged_in"))

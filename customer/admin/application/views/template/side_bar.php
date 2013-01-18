@@ -33,7 +33,7 @@
 	    		<a href="javascript:void(0);"><img src="<?php echo base_url() ; ?>img/icons/packs/fugue/16x16/newspaper.png">Orders</a>
 	    		<ul class="sub">
 	    			<li><a href="<?php echo base_url("orders") ; ?>">All Orders</a></li>
-	    			<li><a href="<?php echo base_url("invoices") ; ?>">All Invoices</a></li>
+                    <li><a href="<?php echo base_url("invoices") ; ?>">All Invoices</a></li>
 					<li><a href="<?php echo base_url("invoices/payments") ; ?>">Payments and Credit Notes</a></li>
 	    		</ul>
 	    	</li>
@@ -67,12 +67,6 @@
 	    		<ul class="sub">
 	    			<li><a href="<?php echo base_url("settings/vat_rates") ; ?>">VAT Codes</a></li>
 	    			<li><a href="javascript:void(0);">Locations</a></li>
-	    		</ul>
-	    	</li>
-	    	<li>
-	    		<a href="javascript:void(0);"><img src="<?php echo base_url() ; ?>img/icons/packs/fugue/16x16/exclamation.png">Audit Log</a>
-	    		<ul class="sub">
-	    			<li><a href="javascript:void(0);">Display Audit Log</a></li>
 	    		</ul>
 	    	</li>
 	    </ul>

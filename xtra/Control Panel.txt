@@ -21,4 +21,4 @@ Password: AsfgHjkl1
 
 
 Customer end url: http://portal.argusdistribution.co.uk
-Admin end URl: http://portal.argusdistribution.co.uk/admin
+Admin end URl: http://portal.argusdistribution.co.uk/admin 

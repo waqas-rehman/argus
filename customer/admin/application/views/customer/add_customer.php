@@ -61,6 +61,13 @@
                         
                         <div class='_50'>
                         	<p>
+                            	<label for="">Maximum Credit Limit?</label>
+                                <input type="text" id="maximum_credit_limit" name="maximum_credit_limit" value="<?php echo set_value("maximum_credit_limit") ; ?>" />
+							</p>
+						</div>
+                        
+                        <div class='_50'>
+                        	<p>
                             	<label for="">Maximum Limit after which transport is free?</label>
                                 <input type="text" id="maximum_limit" name="maximum_limit" value="<?php echo set_value("maximum_limit") ; ?>" />
 							</p>
@@ -87,6 +94,15 @@
                                 <input type="radio" id="special_prices_2" name="special_prices" value="No" <?php echo set_radio('special_prices', 'No', TRUE); ?> /> No
                             </p>
                         </div>
+                        
+                        <div class='_50'>
+                        	<p>
+                            	<label for="username">Send Registration Email?</label>
+                        		<input type="radio" id="send_registration_email_1" name="registration_email_sent" value="Yes" <?php echo set_radio('registration_email_sent', 'Yes', TRUE); ?> /> Yes
+                                <input type="radio" id="send_registration_email_2" name="registration_email_sent" value="No" <?php echo set_radio('registration_email_sent', 'No'); ?> /> No
+                            </p>
+                        </div>
+                        
 					</fieldset>
 					
                     <div class='block-actions'>

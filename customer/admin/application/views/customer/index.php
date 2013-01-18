@@ -41,7 +41,7 @@
                         <tbody>
                         	<?php foreach($customers as $rec) : ?>
                             <tr class='gradeX'>
-                            	<td class='center'><a href="#"><?php echo $rec->company_name ; ?></a></td>
+                            	<td class='center'><a href="<?php echo base_url("orders/add_order/".$rec->id) ; ?>"><?php echo $rec->company_name ; ?></a></td>
                                 <td class='center'><?php echo $rec->contact_person_name ; ?></td>
                                 <td class='center'><?php echo $rec->telephone_number ; ?></td>
                                 <td class='center'><?php echo $rec->username ; ?></td>

@@ -27,7 +27,7 @@ class Orders extends CI_Controller
 	{
 		$cond1["id"] = $this->session->userdata("customer_id") ;
 		$data["customer_rec"] = $this->model1->get_one($cond1, "customers") ;
-		$credit_limit = get_decimal_number_format(abs($data["customer_rec"]->maximum_limit)) ;
+		$credit_limit = get_decimal_number_format(abs($data["customer_rec"]->maximum_credit_limit)) ;
 		$acount_balance = get_decimal_number_format(abs($data["customer_rec"]->balance)) ;
 		
 		$orders = $this->model2->get_customer_invoice2($this->session->userdata("customer_id"));
@@ -93,23 +93,16 @@ class Orders extends CI_Controller
 	{
 		if($_POST)
 		{
+			$order_id = mysql_real_escape_string($this->input->post("order_id_final")) ;
 			$cond1["id"] = mysql_real_escape_string($this->input->post("order_id_final")) ;
-			
-			
-			
 			$order_rec = $this->model1->get_one($cond1, "orders") ;
 			
 			$cond2["order_id"] = mysql_real_escape_string($this->input->post("order_id_final")) ;
 			$product_recs = $this->model1->count_rec_cond($cond2, "order_products") ;
 			
-			if($product_recs == 0)
-				redirect(base_url("orders/order_detail/".$order_id."/5")) ;
-				
-			//elseif(($order_rec->order_description_radio != "Yes") && ($order_rec->order_description_radio != "No") )
-				//redirect(base_url("orders/order_detail/".$cond1["id"]."/6")) ;
-				
-			elseif(($order_rec->order_file_radio != "Yes") && ($order_rec->order_file_radio != "No") )
-				redirect(base_url("orders/order_detail/".$cond1["id"]."/7")) ;
+			if($product_recs == 0) redirect(base_url("orders/order_detail/".$order_id."/5")) ;
+			
+			elseif(($order_rec->order_file_radio != "Yes") && ($order_rec->order_file_radio != "No")) redirect(base_url("orders/order_detail/".$cond1["id"]."/7")) ;
 			
 			else
 			{
@@ -117,12 +110,7 @@ class Orders extends CI_Controller
 				$param1["order_date"] = date("Y-m-d G:i:s") ;
 				$this->model1->update_rec($param1, $cond1, "orders") ;
 				
-				
-				 
-				 // email system  Started
-				//$cond4["purchase_order_number"] = mysql_real_escape_string($this->input->post("purchase_order_number")) ;
 				$cond5["order_id"] = mysql_real_escape_string($this->input->post("order_id_final")) ;
-				
 				$data["orders_prod"] = $this->model1->get_one($cond5, "order_products") ;
 				
 				$cond4["id"] = $this->session->userdata("customer_id") ;
@@ -130,9 +118,16 @@ class Orders extends CI_Controller
 				
 				$data["orders_rec"] = $this->model1->get_one($cond1, "orders") ;
 				
-				
-				 
-				if($data["msg"] = 1) {
+					
+					$cond22["order_id"] = $order_id ;
+					$email_data["products_rec"] = $this->model1->get_all_cond($cond22, "order_products") ;
+					
+					$cond23["id"] = $this->session->userdata("customer_id") ;
+					$email_data["customer_rec"] = $this->model1->get_one($cond23, "customers") ;
+					
+					$cond33["id"] = $email_data["customer_rec"]->vat_code ; 
+					$email_data["vat_rec"] = $this->model1->get_one($cond33, "vat_codes") ;
+					
 					$email_data["delivery_address"] = $data["orders_rec"]->delivery_address;
 					$email_data["creation_date"] = $data["orders_rec"]->creation_date ;
 					$email_data["invoice_amount"] = mysql_real_escape_string($this->input->post("total_cost")) ;
@@ -150,13 +145,9 @@ class Orders extends CI_Controller
 					$param3["email_address"] = $data["customer_rec"]->email_address;
 					
 					$email_message = $this->load->view("email_templates/email_order_rec", $email_data, TRUE) ;
-					
-					send_email_message("Argus Distribution", $param3["email_address"], "sales@argusdistribution.co.uk", 0, "Order Confirmation", $email_message, 0) ;
-					}
-				// email system ended; 
+					if($data["customer_rec"]->registration_email_sent == "Yes")
+						send_email_message("Argus Distribution", $param3["email_address"], "sales@argusdistribution.co.uk", 0, "Order Confirmation", $email_message, 0) ;
 				
-				
-				//$this->load->view($email_message) ;
 				redirect(base_url("orders")) ; 
 			}
 			

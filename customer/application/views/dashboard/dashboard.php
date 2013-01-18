@@ -25,7 +25,7 @@
 			<div class="box">
 				<div class="title">Credit Limit<span class="hide"></span></div>
 				<div class="content">
-					<h6 style="color:#000000">&pound; <?php echo $customer_rec->maximum_limit ; ?></h6></div>
+					<h6 style="color:#000000">&pound; <?php echo $customer_rec->maximum_credit_limit ; ?></h6></div>
 				</div>
 			</div>
 		</div>

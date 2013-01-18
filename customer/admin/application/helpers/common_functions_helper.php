@@ -238,6 +238,119 @@ if ( ! function_exists('get_due_amount'))
 		return $net ;
     }
 }
-
-
 /**/
+
+if ( ! function_exists('post_function'))
+{
+	function post_function($form_elements)
+	{
+		$CI =& get_instance() ;
+		
+		if(is_array($form_elements))
+		{
+			if($form_elements)
+			{
+				foreach($form_elements as $rec => $val):
+					$param1[$rec] = mysql_real_escape_string($CI->input->post($val)) ;
+				endforeach ;
+			}
+			return $param1 ;
+		}
+		else
+			return mysql_real_escape_string($CI->input->post($form_elements)) ;
+	}
+}
+
+if ( ! function_exists('form_validation_function'))
+{
+	function form_validation_function($form_elements)
+	{
+		$CI =& get_instance() ;
+		$CI->load->library("form_validation") ;
+		
+		$CI->form_validation->set_error_delimiters("<li>", "</li>") ;
+		
+		foreach($form_elements as $rec => $val):
+			$res = explode("&", $val);
+			$CI->form_validation->set_rules($rec, $res[0], $res[1]) ;
+		endforeach ;
+	
+		if ($CI->form_validation->run() == FALSE)
+			return FALSE ;
+		else
+			return TRUE ;
+	}
+}
+
+
+if( ! function_exists('upload_file'))
+{
+	function upload_file($file_name, $file_destination)
+	{
+		$CI1 =& get_instance() ;
+		$CI1->load->library('upload') ;
+		
+		$config['upload_path'] = "./".$file_destination."/" ;
+		$config['allowed_types'] = "gif|jpg|png|pdf|doc|docx|xls|xlsx|ppt|pptx|txt" ;
+		$config['max_size']	= '10240' ;
+		$config['encrypt_name']	= TRUE ;
+		$config['remove_spaces']	= TRUE ;
+		
+		$CI1->upload->initialize($config) ;
+		
+		$response = array() ;
+			
+		if (!($CI1->upload->do_upload($file_name)))
+		{
+			$response["result"] = false ;
+			$CI1->upload->display_errors('<li>', '</li>') ;
+			$response["errors"] = $CI1->upload->display_errors() ;
+		}
+		else
+		{
+			$file_data = $CI1->upload->data() ;
+			$response["result"] = true ;
+			$response["encripted_file_name"] = $file_data["file_name"] ; 
+			$response["original_file_name"] = $file_data["orig_name"] ;
+			$response["file_extention"] = $file_data["file_ext"] ;
+		}
+		
+		return $response ;
+	}
+}
+
+if( ! function_exists('upload_image'))
+{
+	function upload_image($file_name, $file_destination)
+	{
+		$CI1 =& get_instance() ;
+		$CI1->load->library('upload') ;
+		
+		$config['upload_path'] = "./".$file_destination."/" ;
+		$config['allowed_types'] = "gif|jpg|png|pdf|doc|docx|xls|xlsx|ppt|pptx|txt" ;
+		$config['max_size']	= '10240' ;
+		$config['encrypt_name']	= TRUE ;
+		$config['remove_spaces']	= TRUE ;
+		
+		$CI1->upload->initialize($config) ;
+		
+		$response = array() ;
+			
+		if (!($CI1->upload->do_upload($file_name)))
+		{
+			$response["result"] = false ;
+			$CI1->upload->display_errors('<li>', '</li>') ;
+			$response["errors"] = $CI1->upload->display_errors() ;
+		}
+		else
+		{
+			$file_data = $CI1->upload->data() ;
+			$response["result"] = true ;
+			$response["encripted_file_name"] = $file_data["file_name"] ; 
+			$response["original_file_name"] = $file_data["orig_name"] ;
+			$response["file_extention"] = $file_data["file_ext"] ;
+		}
+		
+		return $response ;
+	}
+}

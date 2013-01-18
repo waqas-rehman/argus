@@ -5,7 +5,6 @@ class Customer extends CI_Controller
 	public function __construct()
 	{
 		parent::__construct() ;
-		
 		if( !($this->session->userdata("admin_logged_in")) )
 			redirect(base_url("home")) ;
 	}
@@ -58,34 +57,29 @@ class Customer extends CI_Controller
 	
 	public function add_customer()
 	{
-		
 		if($_POST)
 		{
-			$this->form_validation->set_error_delimiters('<li>', '</li>') ;
+			$validation_parameters = array("company_name" => "Company Name&required",
+										   "contact_person_name" => "First Name&required",
+										   "email_address" => "Email Address&required|valid_email",
+										   "telephone_number" => "Telephone Number&required|max_length[20]|min_length[10]|numeric",
+										   "address_line_1" => "Address Line 1&required",
+										   "address_line_2" => "Address Line 2&required",
+										   "city" => "City&required",
+										   "county" => "County&required",
+										   "post_code" => "Post Code&required",
+										   "country" => "Country&required",
+										   "status" => "Status&required",
+										   "username" => "Usernmae&required|is_unique[user_logins.username]",
+										   "vat_code" => "VAT Code&required",
+										   "special_prices" => "Special Prices&required",
+										   "maximum_credit_limit" => "Maximum Credit Limit&required|decimal",
+										   "maximum_limit" => "Maximum Limit&required|decimal",
+										   "transport_charges" => "Transport Charges&required|decimal",
+										   "overdue_days" => "Overdue Days&required|integer",
+										   "registration_email_sent" => "Send Registration&required") ;
 			
-			$this->form_validation->set_rules("company_name", "Company Name", "required") ;
-			$this->form_validation->set_rules("contact_person_name", "First Name", "required") ;
-			$this->form_validation->set_rules("email_address", "Email Address", "required|valid_email") ;
-			$this->form_validation->set_rules("telephone_number", "Telephone Number", "required|max_length[20]|min_length[10]|numeric") ;
-			
-			$this->form_validation->set_rules("address_line_1", "Address Line 1", "required") ;
-			$this->form_validation->set_rules("address_line_2", "Address Line 2", "required") ;
-			$this->form_validation->set_rules("city", "City", "required") ;
-			$this->form_validation->set_rules("county", "County", "required") ;
-			
-			$this->form_validation->set_rules('post_code', 'Post Code', 'required') ;
-			$this->form_validation->set_rules("country", "Country", "required") ;
-			$this->form_validation->set_rules('status', 'Status', 'required') ;
-			$this->form_validation->set_rules('username', 'Usernmae', 'required|is_unique[user_logins.username]') ;
-			//$this->form_validation->set_rules('password', 'Password', 'required') ;
-			$this->form_validation->set_rules('vat_code', 'VAT Code', 'required') ;
-			$this->form_validation->set_rules('special_prices', 'Special Prices', 'required') ;
-			
-			$this->form_validation->set_rules('maximum_limit', 'Maximum Limit', 'required|decimal') ;
-			$this->form_validation->set_rules('transport_charges', 'Transport Charges', 'required|decimal') ;
-			$this->form_validation->set_rules('overdue_days', 'Overdue Days', 'required|integer') ;
-			
-			if ($this->form_validation->run() == FALSE)
+			if (form_validation_function($validation_parameters) == FALSE)
 			{
 				$data["vat_codes"] = $this->model1->get_all("vat_codes") ;
 				$data["msg"] = 1 ;
@@ -96,60 +90,51 @@ class Customer extends CI_Controller
 			
 			else
 			{
-				$password = generatePassword($length = 8); 
-				$param1["company_name"] = mysql_real_escape_string($this->input->post("company_name")) ;
-				$param1["contact_person_name"] = mysql_real_escape_string($this->input->post("contact_person_name")) ;
-				$param1["email_address"] = mysql_real_escape_string($this->input->post("email_address")) ;
-				$param1["telephone_number"] = mysql_real_escape_string($this->input->post("telephone_number")) ;
+				$param1 = post_function(array("company_name" => "company_name",
+								"contact_person_name" => "contact_person_name",
+								"email_address" => "email_address",
+								"telephone_number" => "telephone_number",
+								"address_line_1" => "address_line_1",
+								"address_line_2" => "address_line_2",
+								"city" => "city",
+								"county" => "county",
+								"post_code" => "post_code",
+								"country" => "country",
+								"special_prices" => "special_prices",
+								"vat_code" => "vat_code",
+								"status" => "status",
+								"maximum_credit_limit" => "maximum_credit_limit",
+								"maximum_limit" => "maximum_limit",
+								"transport_charges" => "transport_charges",
+								"overdue_days" => "overdue_days")) ;
 				
-				$param1["address_line_1"] = mysql_real_escape_string($this->input->post("address_line_1")) ;
-				$param1["address_line_2"] = mysql_real_escape_string($this->input->post("address_line_2")) ;
-				$param1["city"] = mysql_real_escape_string($this->input->post("city")) ;
-				$param1["county"] = mysql_real_escape_string($this->input->post("county")) ;
-				
-				$param1["post_code"] = mysql_real_escape_string($this->input->post("post_code")) ;
-				$param1["country"] = mysql_real_escape_string($this->input->post("country")) ;
-				$param1["special_prices"] = mysql_real_escape_string($this->input->post("special_prices")) ;
-				$param1["vat_code"] = mysql_real_escape_string($this->input->post("vat_code")) ;
+				$param1["registration_email_sent"] = "No" ;
 				$param1["creation_date"] = date("Y-m-d G:i:s") ;
 				$param1["update_date"] = date("Y-m-d G:i:s") ;
-				$param1["status"] = mysql_real_escape_string($this->input->post("status")) ;
-				
-				$param1["maximum_limit"] = mysql_real_escape_string($this->input->post("maximum_limit")) ;
-				$param1["transport_charges"] = mysql_real_escape_string($this->input->post("transport_charges")) ;
-				$param1["overdue_days"] = mysql_real_escape_string($this->input->post("overdue_days")) ;
 				
 				$rec_id = $this->model1->insert_rec($param1, "customers") ;
 				
 				$param2["user_id"] = $rec_id ;
-				$param2["username"] = mysql_real_escape_string($this->input->post("username")) ;
-				//$param2["password"] =  md5("secure-password-".mysql_real_escape_string($this->input->post("password"))) ;
-				$param2["password"] =  md5("secure-password-".mysql_real_escape_string($password)) ;
+				$param2["username"] = post_function("username") ;
+				$password = generatePassword($length = 8); 
+				$param2["password"] =  md5("secure-password-".$password) ;
 				
 				$param2["user_type"] =  "customer" ;
 				$login_rec_id = $this->model1->insert_rec($param2, "user_logins") ;
 				$this->load->library('encrypt');
 				if(($rec_id) && ($login_rec_id))
 				{
-					$this->send_registration_email($rec_id) ;
-					if($param1["special_prices"] == "Yes") {
-						redirect(base_url("customer/customer_products/".$rec_id."/2")) ;
-					} else {
-						//$email_data["view"] = "email_templates/customer_registration.php" ;
-						//$this->load->view("template/body", $email_data) ;
-						redirect(base_url("customer/customer_details/".$rec_id."/3")) ;
-					}
+					if(post_function("registration_email_sent") == "Yes") $this->send_registration_email($rec_id, "1") ;
+					if($param1["special_prices"] == "Yes") redirect(base_url("customer/customer_products/".$rec_id."/2")) ;
+					else redirect(base_url("customer/customer_details/".$rec_id."/3")) ;
 				} else {
-					
 					$data["msg"] = 2 ;
 					$data["session_data"] = $this->get_session_data() ;
 					$data["view"] = "customer/add_customer" ;
 					$this->load->view("template/body", $data) ;
-				
 				}
 			}
 		}
-		
 		else
 			redirect(base_url("customer")) ;
 	}
@@ -160,15 +145,71 @@ class Customer extends CI_Controller
 		$customer_login_rec = $this->model1->get_one(array("user_id" => $user_id), "user_logins") ;
 		
 		$email_data["user_id"] = url_base64_encode($user_id);
-		$email_data["client_name"] = ($customer_rec->company_name) ;
+		$email_data["client_name"] = ($customer_rec->company_name) ;//
 		$email_data["contact_person_name"] = $customer_rec->contact_person_name ;
 		$email_data["username"] = $customer_login_rec->username ;
 		
+		$cond1["id"] = $user_id ;
+		$param1["registration_email_sent"] = "Yes" ;
+		
 		$email_message = $this->load->view("email_templates/customer_registration", $email_data, TRUE) ;
 					
-		if(send_email_message("Argus Distribution", $customer_rec->email_address, 0, 0, "Argus Distribution Registration", $email_message,0)) echo "yahoo" ;
-		exit ;
-		return true ;
+		$send_email = send_email_message("Argus Distribution", $customer_rec->email_address, 0, 0, "Argus Distribution - Registration", $email_message,0) ;
+		
+		if($msg == "1")
+		{
+			if($send_email) {  $this->model1->update_rec($param1,$cond1,"customers") ; return true ;}
+			else return false ;
+			
+		} elseif($msg == "2") {
+			
+			if($send_email) { $data["msg"] = 1 ; $this->model1->update_rec($param1,$cond1,"customers") ; }
+			else $data["msg"] = 2 ;
+			$data["session_data"] = $this->get_session_data() ;
+			$data["view"] = "customer/sent_email" ;
+			$this->load->view("template/body", $data) ;
+		}
+	}
+	
+	public function edit_password($customer_id, $msg = 0) 
+	{
+		if($customer_id)
+		{
+			$data["customer_id"] = $customer_id ;
+			$data["msg"] = $msg ;
+			$data["session_data"] = $this->get_session_data() ;
+			$data["view"] = "customer/edit_customer_password" ;
+			$this->load->view("template/body", $data) ;
+		}
+		else
+			redirect(base_url("customer")) ;
+	}
+	
+	public function update_password() 
+	{
+		if($_POST)
+		{
+			$validation_parameter = array("password" => "Password&required") ;
+			if(form_validation_function($validation_parameter) == FALSE)
+			{
+				$data["customer_id"] = post_function("customer_id") ;
+				$data["msg"] = "1" ;
+				$data["session_data"] = $this->get_session_data() ;
+				$data["view"] = "customer/edit_customer_password" ;
+				$this->load->view("template/body", $data) ;
+			}
+			else
+			{
+				$cond1["user_id"] = post_function("customer_id") ;
+				$param1["password"] = md5("secure-password-".post_function("password")) ;
+				
+				$res = $this->model1->update_rec($param1, $cond1, "user_logins") ;
+				if($res) redirect(base_url("customer/customer_details/".$cond1["user_id"]."/6")) ;
+				else redirect(base_url("customer/customer_details/".$cond1["user_id"]."/7")) ;		
+			}
+		}
+		else
+			redirect(base_url("customer")) ;
 	}
 	
 	public function customer_products($customer_id = 0 , $msg = 0) 
@@ -179,11 +220,9 @@ class Customer extends CI_Controller
 			$data["customer_rec"] = $this->model1->get_one($cond1, "customers") ;
 			
 			$attribute1 = array("id", "group_id", "product_name", "product_code", "adl_code", "product_price", "product_manual", "creation_date", "update_date", "status") ;
-		$attribute2 = array("group_name") ;
+			$attribute2 = array("group_name") ;
 		
 			$data["products"] = $this->model1->inner_join_orderby_limit($attribute1, $attribute2, 0, 0, "group_id", "id", "products", "product_groups", "products.creation_date", "DESC") ;
-			
-			
 			
 			$data["msg"] = $msg ;
 			$data["session_data"] = $this->get_session_data() ;
@@ -205,16 +244,14 @@ class Customer extends CI_Controller
 				foreach($product_ids as $rec):
 					$product_price_id = "product_price_".$rec ;
 					$param1["product_id"] = $rec ;
-					$param1["product_price"] = mysql_real_escape_string($this->input->post($product_price_id)) ;
+					$param1["product_price"] = post_function($product_price_id) ;
 					$res1 = $this->model1->insert_rec($param1,"customer_products") ;
 					if($res1) { }
 					else break ;
 				endforeach ;
 			}
-			if($res1)
-				redirect(base_url("customer/customer_details/".$param1["customer_id"]."/5")) ;
-			else
-				redirect(base_url("customer/customer_details/".$param1["customer_id"])) ;
+			if($res1) redirect(base_url("customer/customer_details/".$param1["customer_id"]."/5")) ;
+			else redirect(base_url("customer/customer_details/".$param1["customer_id"])) ;
 		} else
 			redirect(base_url("customer")) ;
 	}
@@ -223,10 +260,10 @@ class Customer extends CI_Controller
 	{
 		if($_POST)
 		{
-			$condx["customer_id"] = mysql_real_escape_string($this->input->post("customer_id")) ;
+			$condx["customer_id"] = post_function("customer_id") ;
 			$this->model1->delete_rec($condx, "customer_products") ;
 			
-			$param1["customer_id"] = mysql_real_escape_string($this->input->post("customer_id")) ;
+			$param1["customer_id"] = post_function("customer_id") ;
 			$product_ids = $this->input->post("product_ids") ;
 			
 			if($product_ids)
@@ -234,16 +271,14 @@ class Customer extends CI_Controller
 				foreach($product_ids as $rec):
 					$product_price_id = "product_price_".$rec ;
 					$param1["product_id"] = $rec ;
-					$param1["product_price"] = mysql_real_escape_string($this->input->post($product_price_id)) ;
+					$param1["product_price"] = post_function($product_price_id) ;
 					$res1 = $this->model1->insert_rec($param1,"customer_products") ;
 					if($res1) { }
 					else break ;
 				endforeach ;
 			}
-			if($res1)
-				redirect(base_url("customer/index/3")) ;
-		} else
-			redirect(base_url("customer")) ;
+			if($res1) redirect(base_url("customer/index/3")) ;
+		} else redirect(base_url("customer")) ;
 	}
 	
 	public function customer_details($customer_id = 0, $msg = 0)
@@ -268,36 +303,32 @@ class Customer extends CI_Controller
 	{
 		if($_POST)
 		{
-			$this->form_validation->set_error_delimiters('<li>', '</li>') ;
+			$validation_parameters = array("company_name" => "Company Name&required",
+										   "contact_person_name" => "First Name&required",
+										   "email_address" => "Email Address&required|valid_email",
+										   "telephone_number" => "Telephone Number&required|max_length[20]|min_length[10]|numeric",
+										   "address_line_1" => "Address Line 1&required",
+										   "address_line_2" => "Address Line 2&required",
+										   "city" => "City&required",
+										   "county" => "County&required",
+										   "post_code" => "Post Code&required",
+										   "country" => "Country&required",
+										   "status" => "Status&required",
+										   "maximum_credit_limit" => "Maximum Credit Limit&required|decimal",
+										   "maximum_limit" => "Maximum Limit&required|decimal",
+										   "transport_charges" => "Transport Charges&required|decimal",
+										   "overdue_days" => "Overdue Days&required|integer") ;
 			
-			$this->form_validation->set_rules("company_name", "Company Name", "required") ;
-			$this->form_validation->set_rules("contact_person_name", "First Name", "required") ;
-			$this->form_validation->set_rules("email_address", "Email Address", "required|valid_email") ;
-			$this->form_validation->set_rules("telephone_number", "Telephone Number", "required|max_length[20]|min_length[10]|numeric") ;
-			
-			$this->form_validation->set_rules("address_line_1", "Address Line 1", "required") ;
-			$this->form_validation->set_rules("address_line_2", "Address Line 2", "required") ;
-			$this->form_validation->set_rules("city", "City", "required") ;
-			$this->form_validation->set_rules("county", "County", "required") ;
-			
-			$this->form_validation->set_rules('post_code', 'Post Code', 'required') ;
-			$this->form_validation->set_rules("country", "Country", "required") ;
-			$this->form_validation->set_rules('status', 'Status', 'required') ;
-			
-			$this->form_validation->set_rules('maximum_limit', 'Maximum Limit', 'required|decimal') ;
-			$this->form_validation->set_rules('transport_charges', 'Transport Charges', 'required|decimal') ;
-			$this->form_validation->set_rules('overdue_days', 'Overdue Days', 'required|integer') ;
-			
-			$condx["user_id"] = mysql_real_escape_string($this->input->post("customer_id")) ;
+			$condx["user_id"] = post_function("customer_id") ;
 			$temp_customer_rec = $this->model1->get_one($condx, "user_logins") ;
 			
 			if($temp_customer_rec->username != mysql_real_escape_string($this->input->post("username")))
-				$this->form_validation->set_rules('username', 'Username', 'required|is_unique[user_logins.username]') ;
+				$validation_parameters["username"] = "Username&required|is_unique[user_logins.username" ;
 			
-			$this->form_validation->set_rules('vat_code', 'VAT Code', 'required') ;
-	
-			if ($this->form_validation->run() == FALSE) {
-				
+			$validation_parameters["vat_code"] = "VAT Code&required" ;
+			
+			if (form_validation_function($validation_parameters) == FALSE)
+			{
 				$customer_id = mysql_real_escape_string($this->input->post("customer_id")) ;
 				
 				$cond1["id"] = $customer_id ;
@@ -313,33 +344,31 @@ class Customer extends CI_Controller
 			
 			} else {
 				
-				$param1["company_name"] = mysql_real_escape_string($this->input->post("company_name")) ;
-				$param1["contact_person_name"] = mysql_real_escape_string($this->input->post("contact_person_name")) ;
-				$param1["email_address"] = mysql_real_escape_string($this->input->post("email_address")) ;
-				$param1["telephone_number"] = mysql_real_escape_string($this->input->post("telephone_number")) ;
+				$param1 = post_function(array("company_name" => "company_name",
+											  "contact_person_name" => "contact_person_name",
+											  "email_address" => "email_address",
+											  "telephone_number" => "telephone_number",
+											  "address_line_1" => "address_line_1",
+											  "address_line_2" => "address_line_2",
+											  "city" => "city",
+											  "county" => "county",
+											  "post_code" => "post_code",
+											  "country" => "country",
+											  "status" => "status",
+											  "maximum_credit_limit" => "maximum_credit_limit",
+											  "vat_code" => "vat_code",				
+											  "maximum_limit" => "maximum_limit",
+											  "transport_charges" => "transport_charges",
+											  "overdue_days" => "overdue_days")) ;
 				
-				$param1["address_line_1"] = mysql_real_escape_string($this->input->post("address_line_1")) ;
-				$param1["address_line_2"] = mysql_real_escape_string($this->input->post("address_line_2")) ;
-				$param1["city"] = mysql_real_escape_string($this->input->post("city")) ;
-				$param1["county"] = mysql_real_escape_string($this->input->post("county")) ;
-				
-				$param1["post_code"] = mysql_real_escape_string($this->input->post("post_code")) ;
-				$param1["country"] = mysql_real_escape_string($this->input->post("country")) ;
 				$param1["creation_date"] = date("Y-m-d G:i:s") ;
 				$param1["update_date"] = date("Y-m-d G:i:s") ;
-				$param1["status"] = mysql_real_escape_string($this->input->post("status")) ;
-				$param1["vat_code"] = mysql_real_escape_string($this->input->post("vat_code")) ;
 				
-				$param1["maximum_limit"] = mysql_real_escape_string($this->input->post("maximum_limit")) ;
-				$param1["transport_charges"] = mysql_real_escape_string($this->input->post("transport_charges")) ;
-				$param1["overdue_days"] = mysql_real_escape_string($this->input->post("overdue_days")) ;
-				
-				$cond1["id"] = mysql_real_escape_string($this->input->post("customer_id")) ;
-				
+				$cond1["id"] = post_function("customer_id") ;
 				$rec_id = $this->model1->update_rec($param1, $cond1, "customers") ;
 				
-				$cond2["user_id"] = mysql_real_escape_string($this->input->post("customer_id")) ;
-				$param2["username"] = mysql_real_escape_string($this->input->post("username")) ;
+				$cond2["user_id"] = post_function("customer_id") ;
+				$param2["username"] = post_function("username") ;
 				
 				$login_rec_id = $this->model1->update_rec($param2, $cond2, "user_logins") ;
 				
@@ -360,6 +389,7 @@ class Customer extends CI_Controller
 			
 			$cond2["user_id"] = $customer_id ;
 			$res2 = $this->model1->delete_rec($cond2, "user_logins") ;
+			
 			$cond3["customer_id"] = $customer_id ;
 			$res3 = $this->model1->delete_rec($cond3, "orders") ;
 			
@@ -369,12 +399,9 @@ class Customer extends CI_Controller
 			
 			$res6 = $this->model1->delete_rec($cond3, "transactions") ;
 			
-			if(($res1) && ($res2))
-				redirect(base_url("customer/index/1")) ;
-			else
-				redirect(base_url("customer/index/2")) ;
-		} else
-			redirect(base_url("customer")) ;
+			if(($res1) && ($res2) && ($res3) && ($res4) && ($res5) && ($res6)) redirect(base_url("customer/index/1")) ;
+			else redirect(base_url("customer/index/2")) ;
+		} else redirect(base_url("customer")) ;
 	}
 	
 	public function email_form($customer_id = 0, $msg = 0)
@@ -398,15 +425,11 @@ class Customer extends CI_Controller
 		{
 			$this->form_validation->set_error_delimiters('<li>', '</li>') ;
 			
-			$this->form_validation->set_rules("customer_email_address", "Customer Email Address(es)", "required|valid_emails") ;
-			/*$this->form_validation->set_rules("cc_email_address", "CC Email Address(es)", "valid_emails") ;
-			$this->form_validation->set_rules("bcc_email_address", "BCC Email Address(es)", "valid_emails") ;
-			$this->form_validation->set_rules("email_subject", "Email Subject", "required") ;
-			$this->form_validation->set_rules("email_message", "Email Message", "required") ;
-			/**/
-			if ($this->form_validation->run() == FALSE) {
+			$validation_parameters = array("customer_email_address" => "Customer Email Address(es)&required|valid_emails") ;
 			
-				$customer_id = mysql_real_escape_string($this->input->post("customer_id")) ;
+			if (form_validation_function() == FALSE) {
+			
+				$customer_id = post_function("customer_id") ;
 				$cond1["id"] = $customer_id ;
 				$data["customer_rec"] = $this->model1->get_one($cond1, "customers") ;
 				$data["msg"] = 1 ;
@@ -416,13 +439,12 @@ class Customer extends CI_Controller
 			
 			} else {
 				
-				$param1["customer_email_address"] = mysql_real_escape_string($this->input->post("customer_email_address")) ;
-				$param1["cc_email_address"] = mysql_real_escape_string($this->input->post("cc_email_address")) ;
-				$param1["bcc_email_address"] = mysql_real_escape_string($this->input->post("bcc_email_address")) ;
-				
-				$param1["email_subject"] = mysql_real_escape_string($this->input->post("email_subject")) ;
-				$param1["email_message"] = mysql_real_escape_string($this->input->post("email_message")) ;
-				$param1["customer_id"] = mysql_real_escape_string($this->input->post("customer_id")) ;
+				$param1 = post_function(array("customer_email_address" => "customer_email_address",
+											  "cc_email_address" => "cc_email_address",
+                                              "bcc_email_address" => "bcc_email_address",
+											  "email_subject" => "email_subject",
+											  "email_message" => "email_message",
+											  "customer_id" => "customer_id")) ;
 				
 				$config['upload_path'] =  "./email_attachments/" ;
 				$config['allowed_types'] = "gif|jpg|png|pdf|doc|docx|xls|xlsx|ppt|pptx|txt" ;
@@ -447,10 +469,8 @@ class Customer extends CI_Controller
 				if($param1["cc_email_address"] == "") $param1["cc_email_address"] = 0 ;
 				if($param1["bcc_email_address"] == "") $param1["bcc_email_address"] = 0 ;
 				
-				if(send_email_message("Argus Distribution", $param1["customer_email_address"], $param1["cc_email_address"], $param1["bcc_email_address"], $param1["email_subject"], $param1["email_message"], $param1["attachment_file"]))
-					redirect(base_url("customer/email_form/".($param1["customer_id"])."/3")) ;
-				else
-					redirect(base_url("customer/email_form/".($param1["customer_id"])."/2")) ;	
+				if(send_email_message("Argus Distribution", $param1["customer_email_address"], $param1["cc_email_address"], $param1["bcc_email_address"], $param1["email_subject"], $param1["email_message"], $param1["attachment_file"])) redirect(base_url("customer/email_form/".($param1["customer_id"])."/3")) ;
+				else redirect(base_url("customer/email_form/".($param1["customer_id"])."/2")) ;	
 			}
 			
 		} else
@@ -459,9 +479,7 @@ class Customer extends CI_Controller
 
 	private function get_session_data()
 	{
-		$session_data = array(
-					"sad" => $this->session->userdata('email')
-				) ;
+		$session_data = array("sad" => $this->session->userdata('email')) ;
 		return $session_data ;
 	}
 	

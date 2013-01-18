@@ -38,7 +38,7 @@
 							</td>
 							<td id="product_<?php echo $x ; ?>">
                             	<input type="hidden" id="products<?php echo $x ; ?>" name="products[]" value="<?php echo $rec->product_id."|".$rec->product_price ; ?>"  class="products_dropdown"  number="<?php echo $x ; ?>" />
-                                <?php echo $rec->product_name. " - ".$rec->product_code. " - ".$rec->adl_code ; ?>
+                                <?php echo $rec->product_name. " - ".$rec->product_code. " - ".$rec->product_adl_code ; ?>
                             </td>
 							<td id="quantity_<?php echo $x ; ?>">
                             	<input type="hidden" id="product_quantity<?php echo $x ; ?>"  name="product_quantity[]" value="<?php echo $rec->product_quantity ; ?>" class="product_quantity" number="<?php echo $x ; ?>" />
