@@ -132,7 +132,7 @@ class Model2 extends CI_Model
 	}
 	public function get_orders()
 	{
-		$q = "(SELECT * FROM orders WHERE  type = 'order' AND status = 'Accepted' ORDER BY orders.acceptance_date DESC LIMIT 5) UNION (SELECT * FROM orders WHERE type = 'order'  AND status = 'Pending' ORDER BY orders.shipment_date DESC LIMIT 5) UNION (SELECT * FROM orders WHERE type = 'order'  AND status = 'Ordered' ORDER BY orders.shipment_date DESC LIMIT 5)" ;
+		$q = "(SELECT * FROM orders WHERE type = 'order' AND status = 'Pending' ORDER BY orders.creation_date DESC LIMIT 5) UNION (SELECT * FROM orders WHERE type = 'order' AND status = 'Accepted' ORDER BY orders.acceptance_date DESC LIMIT 5) UNION (SELECT * FROM orders WHERE type = 'order' AND status = 'Ordered' ORDER BY orders.order_date DESC LIMIT 5) UNION (SELECT * FROM orders WHERE type = 'order' AND status = 'Shipped' ORDER BY orders.shipment_date DESC LIMIT 5)" ;
 		
 		$query = $this->db->query($q) ;
 		

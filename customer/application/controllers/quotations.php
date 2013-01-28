@@ -81,6 +81,8 @@ class Quotations extends CI_Controller
 						
 						$param1["product_id"] = $arr[0] ;
 						$param1["product_name"] = $gr_pr_rec->product_name ;
+						$param1["product_code"] = $gr_pr_rec->product_code ;
+						$param1["product_adl_code"] = $gr_pr_rec->adl_code ;
 						$param1["product_quantity"] = intval($product_quantity[$i]) ;
 						$param1["product_price"] = floatval($arr[1]) ;
 						$param1["vat_rate"] = $vat_rate ;
@@ -170,6 +172,7 @@ class Quotations extends CI_Controller
 						$arr = explode("|", $val) ;
 						
 						$gr_pr_rec = $this->model2->get_group_product_name($product_group[$i], intval($arr[0])) ;
+						print_r($gr_pr_rec) ; exit ; 
 						
 						$param1["order_id"] = $quotation_id ;
 						
@@ -178,6 +181,8 @@ class Quotations extends CI_Controller
 						
 						$param1["product_id"] = $arr[0] ;
 						$param1["product_name"] = $gr_pr_rec->product_name ;
+						$param1["product_code"] = $gr_pr_rec->product_code ;
+						$param1["product_adl_code"] = $gr_pr_rec->adl_code ;
 						$param1["product_quantity"] = intval($product_quantity[$i]) ;
 						$param1["product_price"] = floatval($arr[1]) ;
 						$param1["vat_rate"] = $vat_rate ;

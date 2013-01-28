@@ -25,12 +25,12 @@
 		<ul class="menu collapsible shadow-bottom">
 	    	<li>
             	<a href="<?php echo base_url("dashboard") ; ?>">
-                	<img src="<?php echo base_url() ; ?>img/icons/packs/fugue/16x16/dashboard.png">Dashboard</span>
+                	<img src="<?php echo base_url("img/icons/packs/fugue/16x16/dashboard.png") ; ?>">Dashboard</span>
                 </a>
             </li>
 	    	
             <li>
-	    		<a href="javascript:void(0);"><img src="<?php echo base_url() ; ?>img/icons/packs/fugue/16x16/newspaper.png">Orders</a>
+	    		<a href="javascript:void(0);"><img src="<?php echo base_url("img/icons/packs/fugue/16x16/newspaper.png") ; ?>">Orders</a>
 	    		<ul class="sub">
 	    			<li><a href="<?php echo base_url("orders") ; ?>">All Orders</a></li>
                     <li><a href="<?php echo base_url("invoices") ; ?>">All Invoices</a></li>
@@ -39,14 +39,18 @@
 	    	</li>
 			
 			<li>
-	    		<a href="javascript:void(0);"><img src="<?php echo base_url() ; ?>img/icons/packs/fugue/16x16/newspaper.png">Returns</a>
+	    		<a href="javascript:void(0);"><img src="<?php echo base_url("img/icons/packs/fugue/16x16/newspaper.png") ; ?>">Returns</a>
 	    		<ul class="sub">
 	    			<li><a href="<?php echo base_url("returns") ; ?>">All Returns</a></li>
 	    		</ul>
 	    	</li>
+            
+            <li>
+	    		<a href="<?php echo base_url("quotations") ; ?>"><img src="<?php echo base_url("img/icons/packs/fugue/16x16/newspaper.png") ; ?>">Quotations</a>
+	    	</li>
 			
 	    	<li>
-	    		<a href="javascript:void(0);"><img src="<?php echo base_url() ; ?>img/icons/packs/fugue/16x16/user-white.png">Customers</a>
+	    		<a href="javascript:void(0);"><img src="<?php echo base_url("img/icons/packs/fugue/16x16/user-white.png") ; ?>">Customers</a>
 	    		<ul class="sub">
 	    			<li><a href="<?php echo base_url("customer") ; ?>">All Customers</a></li>
 	    			<li><a href="<?php echo base_url("customer/customer_form") ; ?>">Add New Customer</a></li>
@@ -54,7 +58,7 @@
 	    	</li>
             
             <li>
-	    		<a href="javascript:void(0);"><img src="<?php echo base_url() ; ?>img/icons/packs/fugue/16x16/box.png">Products</a>
+	    		<a href="javascript:void(0);"><img src="<?php echo base_url("img/icons/packs/fugue/16x16/box.png") ; ?>">Products</a>
 	    		<ul class="sub">
 	    			<li><a href="<?php echo base_url("product") ; ?>">All Products</a></li>
 	    			<li><a href="<?php echo base_url("product/product_form") ; ?>">Add New Product</a></li>
@@ -63,7 +67,7 @@
 	    	</li>
             
 	    	<li>
-	    		<a href="javascript:void(0);"><img src="<?php echo base_url() ; ?>img/icons/packs/fugue/16x16/gear.png">Settings</a>
+	    		<a href="javascript:void(0);"><img src="<?php echo base_url("img/icons/packs/fugue/16x16/gear.png") ; ?>">Settings</a>
 	    		<ul class="sub">
 	    			<li><a href="<?php echo base_url("settings/vat_rates") ; ?>">VAT Codes</a></li>
 	    			<li><a href="javascript:void(0);">Locations</a></li>

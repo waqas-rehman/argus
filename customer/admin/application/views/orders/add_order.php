@@ -218,6 +218,17 @@
                               
                     </fieldset>
                     
+                    <fieldset>
+                    	<legend>Order Email</legend>
+                    	<div class='_50'>
+                        	<p>
+                            <label for="username">Send Email?</label>
+                        	<input type="radio" id="send_email1" name="send_email" value="Yes" <?php echo set_radio('send_email', 'Yes', TRUE) ; ?> /> Yes
+                            <input type="radio" id="send_email2" name="send_email" value="No" <?php echo set_radio('send_email', 'No') ; ?> /> No
+                            </p>
+                        </div>
+                    </fieldset>
+                    
                     <div class='block-actions'>
                         <ul class='actions-right'>
                         	<li><a id="submit_form" class="close-toolbox button" href="javascript:void(0);">Insert Order</a></li>

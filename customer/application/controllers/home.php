@@ -21,8 +21,6 @@ class Home extends CI_Controller
 	
 	public function login()
 	{
-	
-		//$this->load->library('Phpbb_bridge');
 		$this->load->helper('url') ;
 		if($_POST)
 		{
@@ -51,8 +49,7 @@ class Home extends CI_Controller
 										'email_address' => $customer_rec->email_address
 										) ;
 					$this->session->set_userdata($session_data) ;
-					
-					//$this->phpbb_bridge->user_login($cond1["username"], mysql_real_escape_string($this->input->post("password")));
+					$this->update_login_timestamp($rec->user_id) ;
 					
 					$this->load->helper('url') ;
 					redirect(base_url("dashboard")) ;
@@ -62,6 +59,13 @@ class Home extends CI_Controller
 			}
 		} else
 			redirect(base_url()) ;
+	}
+	
+	public function update_login_timestamp($customer_id)
+	{
+		$cond1["id"] = $customer_id ;
+		$param["last_login"] = date("Y-m-d H:i:s") ;
+		$res = $this->model1->update_rec($param, $cond1, "user_logins") ;
 	}
 	
 	public function logout()

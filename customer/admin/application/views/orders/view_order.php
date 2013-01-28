@@ -3,6 +3,7 @@
     	<div class="grid_12"><h1>Order Details</h1></div>
         <div class='grid_12'>
         	<div class='block-border'>
+            	
 				<div class='block-header'><h1>Order Details - Purchase Order Number <?php echo $order_rec->purchase_order_number ; ?></h1><span></span></div>
 				<?php 
 				if($msg)
@@ -64,11 +65,14 @@
 				}
                 ?>
 				<form id='form' class="block-content form" action="" method='post'>
-				<fieldset>
+				
+                <fieldset>
 					<legend>Order Basic Details</legend>
 					<div class='_50'><p><b>Order Status: </b><?php echo $order_rec->status ; ?> (<a href="<?php echo base_url("orders/edit_status/".$order_rec->id) ; ?>">Change</a>)</p></div>
-					<div class='_50'><p><b>Purchase Order Number: </b><?php echo $order_rec->purchase_order_number ; ?></p></div>
-					<div class='_50'><p><b>Invoice Address: </b><?php echo $order_rec->invoice_address ; ?></p></div>
+                    <div class='_50'><p><b>Purchase Order Number: </b><?php echo $order_rec->purchase_order_number ; ?></p></div>
+					<div class='_50'><p><b>Print Order: </b><a href="<?php echo base_url("orders/create_pdf/".$order_rec->id) ; ?>" target="_blank">Click Here</a></p></div>
+                    <div style=" clear:both ;"></div>
+                    <div class='_50'><p><b>Invoice Address: </b><?php echo $order_rec->invoice_address ; ?></p></div>
 					<div class='_50'><p><b>Delivery Address: </b><?php echo $order_rec->delivery_address ; ?></p></div>
 				</fieldset>
 				
@@ -94,6 +98,7 @@
                         	<tr>
                             	<th>Product Group</th>
                             	<th>Products</th>
+                                <th>ADL Code -  Product Code</th>
                             	<th>Quantity</th>
                             	<th>Unit Price (&pound;)</th>
                             	<th>Total Price (&pound;)</th>
@@ -111,6 +116,7 @@
                             <tr>
                                 <td><?php echo $rec->product_group ; ?></td>
                                 <td><?php echo $rec->product_name ; ?></td>
+                                <td><?php echo $rec->product_adl_code." ".$rec->product_code ; ?></td>
                                 <td><?php echo $rec->product_quantity ; ?></td>
                                 <td><?php echo number_format($rec->product_price, 2 , ".", ",") ; ?></td>
                                 <td>
@@ -124,7 +130,7 @@
                             <?php endforeach ; } ?>
                             
                             <tr id="last5">
-                                <td colspan="4" style="text-align:right !important;">Transpotation Charges</td>
+                                <td colspan="5" style="text-align:right !important;">Transpotation Charges</td>
                                 <td id="total_plus_vat">
 									<?php
 										$transport_charges = 0 ;
@@ -136,22 +142,22 @@
                             </tr>
                             
                             <tr id="last2">
-                                <td colspan="4" style="text-align:right !important;">Sub Total Amount: </td>
+                                <td colspan="5" style="text-align:right !important;">Sub Total Amount: </td>
                                 <td id="sub_total"><?php echo number_format(($temp_sub_total + $transport_charges), 2 , ".", ",") ; ?></td>
                             </tr>
                             
                             <tr id="last3">
-                                <td colspan="4" style="text-align:right !important;">VAT Code: </td>
+                                <td colspan="5" style="text-align:right !important;">VAT Code: </td>
                                 <td id="vat-code"><?php echo $vat_rec->vat_code ; ?></td>
                             </tr>
                             <?php $temp_vat_tax = $temp_vat_tax + ($transport_charges * (floatval($vat_rec->vat_rate)/100)) ; ?>
                             <tr id="last4">
-                                <td colspan="4" style="text-align:right !important;">VAT</td>
+                                <td colspan="5" style="text-align:right !important;">VAT</td>
                                 <td id="sub_total_vat"><?php echo number_format(($temp_vat_tax), 2 , ".", ",") ; ?></td>
                             </tr>
                             
                             <tr id="last6">
-                                <td colspan="4" style="text-align:right !important;">Total</td>
+                                <td colspan="5" style="text-align:right !important;">Total</td>
                                 <td id="total_plus_vat"><?php echo number_format(($transport_charges + $temp_vat_tax  + $temp_sub_total), 2, ".", ",") ;  ?></td>
                             </tr>
                             

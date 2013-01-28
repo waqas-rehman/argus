@@ -26,19 +26,19 @@
 
   <!-- CSS: implied media=all -->
   <!-- CSS concatenated and minified via ant build script-->
-  <link rel="stylesheet" href="<?php echo base_url() ; ?>css/style.css"> <!-- Generic style (Boilerplate) -->
-  <link rel="stylesheet" href="<?php echo base_url() ; ?>css/960.fluid.css"> <!-- 960.gs Grid System -->
-  <link rel="stylesheet" href="<?php echo base_url() ; ?>css/main.css"> <!-- Complete Layout and main styles -->
-  <link rel="stylesheet" href="<?php echo base_url() ; ?>css/buttons.css"> <!-- Buttons, optional -->
-  <link rel="stylesheet" href="<?php echo base_url() ; ?>css/lists.css"> <!-- Lists, optional -->
-  <link rel="stylesheet" href="<?php echo base_url() ; ?>css/icons.css"> <!-- Icons, optional -->
-  <link rel="stylesheet" href="<?php echo base_url() ; ?>css/notifications.css"> <!-- Notifications, optional -->
-  <link rel="stylesheet" href="<?php echo base_url() ; ?>css/typography.css"> <!-- Typography -->
-  <link rel="stylesheet" href="<?php echo base_url() ; ?>css/forms.css"> <!-- Forms, optional -->
-  <link rel="stylesheet" href="<?php echo base_url() ; ?>css/tables.css"> <!-- Tables, optional -->
-  <link rel="stylesheet" href="<?php echo base_url() ; ?>css/charts.css"> <!-- Charts, optional -->
-  <link rel="stylesheet" href="<?php echo base_url() ; ?>css/jquery-ui-1.8.15.custom.css"> <!-- jQuery UI, optional -->
-  <link rel="stylesheet" href="<?php echo base_url() ; ?>css/html_notifications.css"> <!-- Notifications, optional -->
+  <link rel="stylesheet" href="<?php echo base_url("css/style.css") ; ?>"> <!-- Generic style (Boilerplate) -->
+  <link rel="stylesheet" href="<?php echo base_url("css/960.fluid.css") ; ?>"> <!-- 960.gs Grid System -->
+  <link rel="stylesheet" href="<?php echo base_url("css/main.css") ; ?>"> <!-- Complete Layout and main styles -->
+  <link rel="stylesheet" href="<?php echo base_url("css/buttons.css") ; ?>"> <!-- Buttons, optional -->
+  <link rel="stylesheet" href="<?php echo base_url("css/lists.css") ; ?>"> <!-- Lists, optional -->
+  <link rel="stylesheet" href="<?php echo base_url("css/icons.css") ; ?>"> <!-- Icons, optional -->
+  <link rel="stylesheet" href="<?php echo base_url("css/notifications.css") ; ?>"> <!-- Notifications, optional -->
+  <link rel="stylesheet" href="<?php echo base_url("css/typography.css") ; ?>"> <!-- Typography -->
+  <link rel="stylesheet" href="<?php echo base_url("css/forms.css") ; ?>"> <!-- Forms, optional -->
+  <link rel="stylesheet" href="<?php echo base_url("css/tables.css") ; ?>"> <!-- Tables, optional -->
+  <link rel="stylesheet" href="<?php echo base_url("css/charts.css") ; ?>"> <!-- Charts, optional -->
+  <link rel="stylesheet" href="<?php echo base_url("css/jquery-ui-1.8.15.custom.css") ; ?>"> <!-- jQuery UI, optional -->
+  <link rel="stylesheet" href="<?php echo base_url("css/html_notifications.css") ; ?>"> <!-- Notifications, optional -->
   <!-- end CSS-->
   
   <!-- Fonts -->

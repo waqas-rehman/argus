@@ -26,6 +26,8 @@
                 <br />
                 	<form id="dynamic_products_form" action="<?php echo base_url("orders/update_products") ; ?>" method="post">
                     
+                    <input type="hidden" id="customer_id" name="customer_id" value="<?php echo $customer_rec->id ?>" /> 
+                    
                     <input type="hidden" id="order_id" name="order_id" value="<?php echo $order_id ; ?>" />
                     <input type="hidden" id="current_tr" name="current_tr" value="<?php echo intval($total_products) + 1 ; ?>" />
                     <input type="hidden" id="current_num" name="current_num" value="<?php echo intval($total_products) + 1 ; ?>" />
@@ -238,11 +240,12 @@ $(function(){
 		var num = $(this).attr("number") ;
 		var group = "#product_group"+num+" option:selected" ;
 		var group_id = $(group).val() ;
+		var customer_id = $("#customer_id").val() ;
 		
 		$("#group_"+num).css("background-color", '#F2F2F2') ;
 		
-		var data1 = "group_id="+group_id+"&number="+num ;
-		
+		var data1 = "group_id="+group_id+"&number="+num+"&customer_id="+customer_id ;
+	
 		var html_data = "" ;
 		
 		$.ajax

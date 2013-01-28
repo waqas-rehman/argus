@@ -124,48 +124,52 @@ class Orders extends CI_Controller
 				}
 			}
 			
-			if($param["status"] == "Outstanding" || $param["status"] == "Invoiced" && $param["status"] == "Completed")
+			if($param["status"] == "Outstanding" || $param["status"] == "Invoiced" || $param["status"] == "Completed")
 				$this->calculate_invoice($order_id, $param["customer_id"]) ;
 			
 			$customer_rec = $this->model1->get_one(array("id" => $param["customer_id"]), "customers") ;
 			
-			if($customer_rec->registration_email_sent == "Yes")
+			$email_flag = post_function("send_email") ;
+			if($email_flag == "Yes")
 			{
-				$customer_id = $param["customer_id"] ;
-				
-				$data["orders_prod"] = $this->model1->get_one(array("order_id" => $order_id), "order_products") ;
-				
-				$data["customer_rec"] = $this->model1->get_one(array("id" => $customer_id), "customers") ;
-				
-				$data["orders_rec"] = $this->model1->get_one(array("id" => $order_id), "orders") ;
-				
+				if($customer_rec->registration_email_sent == "Yes")
+				{
+					$customer_id = $param["customer_id"] ;
 					
-				$cond22["order_id"] = $order_id ;
-				$email_data["products_rec"] = $this->model1->get_all_cond($cond22, "order_products") ;
+					$data["orders_prod"] = $this->model1->get_one(array("order_id" => $order_id), "order_products") ;
 					
-				$cond23["id"] = $customer_id ;
-				$email_data["customer_rec"] = $this->model1->get_one($cond23, "customers") ;
+					$data["customer_rec"] = $this->model1->get_one(array("id" => $customer_id), "customers") ;
 					
-				$cond33["id"] = $email_data["customer_rec"]->vat_code ; 
-				$email_data["vat_rec"] = $this->model1->get_one($cond33, "vat_codes") ;
+					$data["orders_rec"] = $this->model1->get_one(array("id" => $order_id), "orders") ;
 					
-				$email_data["delivery_address"] = $data["orders_rec"]->delivery_address;
-				$email_data["creation_date"] = $data["orders_rec"]->creation_date ;
-				$email_data["product_group"] = $data["orders_prod"]->product_group ;
-				
-				$email_data["product_name"] = $data["orders_prod"]->product_name ;
-				
-				$email_data["product_quantity"] = $data["orders_prod"]->product_quantity ;
-				$email_data["product_price"] = $data["orders_prod"]->product_price ;
-				$email_data["po_number"] = $data["orders_rec"]->purchase_order_number;
+						
+					$cond22["order_id"] = $order_id ;
+					$email_data["products_rec"] = $this->model1->get_all_cond($cond22, "order_products") ;
+						
+					$cond23["id"] = $customer_id ;
+					$email_data["customer_rec"] = $this->model1->get_one($cond23, "customers") ;
+						
+					$cond33["id"] = $email_data["customer_rec"]->vat_code ; 
+					$email_data["vat_rec"] = $this->model1->get_one($cond33, "vat_codes") ;
+						
+					$email_data["delivery_address"] = $data["orders_rec"]->delivery_address;
+					$email_data["creation_date"] = $data["orders_rec"]->creation_date ;
+					$email_data["product_group"] = $data["orders_prod"]->product_group ;
 					
-				$email_data["client_name"] = $data["customer_rec"]->company_name;
-				$email_data["contact_person_name"] = $data["customer_rec"]->contact_person_name;
-				$param3["email_address"] = $data["customer_rec"]->email_address;
+					$email_data["product_name"] = $data["orders_prod"]->product_name ;
 					
-				$email_message = $this->load->view("email_templates/email_order_rec", $email_data, TRUE) ;
-				if($data["customer_rec"]->registration_email_sent == "Yes")
-					send_email_message("Argus Distribution", $param3["email_address"], "sales@argusdistribution.co.uk", 0, "Order Confirmation", $email_message, 0) ;
+					$email_data["product_quantity"] = $data["orders_prod"]->product_quantity ;
+					$email_data["product_price"] = $data["orders_prod"]->product_price ;
+					$email_data["po_number"] = $data["orders_rec"]->purchase_order_number;
+						
+					$email_data["client_name"] = $data["customer_rec"]->company_name;
+					$email_data["contact_person_name"] = $data["customer_rec"]->contact_person_name;
+					$param3["email_address"] = $data["customer_rec"]->email_address;
+						
+					$email_message = $this->load->view("email_templates/email_order_rec", $email_data, TRUE) ;
+					if($data["customer_rec"]->registration_email_sent == "Yes")
+						send_email_message("Argus Distribution", $param3["email_address"], "sales@argusdistribution.co.uk", 0, "Order Confirmation", $email_message, 0) ;
+				}
 			}
 			
 			if($param["status"] == "Completed")
@@ -186,6 +190,49 @@ class Orders extends CI_Controller
 			redirect(base_url("customer")) ;
 	}
 	
+	private function calculate_invoice($order_id, $customer_id)
+	{
+		$cond1["order_id"] = $order_id ;
+		$order_products = $this->model1->get_all_cond($cond1, "order_products") ;
+		
+		$cond2["id"] = $customer_id ;
+		$customer_rec = $this->model1->get_one($cond2, "customers") ;
+		
+		$cond3["id"] = $customer_rec->vat_code ;
+		$vat_rec = $this->model1->get_one($cond3, "vat_codes") ;
+		
+		$vat_rate = (floatval($vat_rec->vat_rate)/100) ;
+		$maximum_limit = floatval($customer_rec->maximum_limit) ;
+		$transpotation_charges = floatval($customer_rec->transport_charges) ;
+		
+		$products_total = 0 ;
+		$products_total_vat = 0 ;
+		
+		if($order_products)
+		{
+			foreach($order_products as $rec):
+				$products_total = $products_total + (floatval($rec->product_price) * intval($rec->product_quantity)) ;
+				$products_total_vat = $products_total_vat + (floatval($rec->product_price) * intval($rec->product_quantity)) + (floatval($rec->product_price) * intval($rec->product_quantity) * (floatval($rec->vat_rate)/100)) ;
+			endforeach ;		
+		}
+		$temp = 0.0 ;
+		
+		if($products_total <= $maximum_limit) 
+		{
+			$temp = $vat_rate * $transpotation_charges ;
+			$products_total_vat = $products_total_vat + $transpotation_charges + $temp ;
+		}
+		
+		$param1["balance"] = (floatval($customer_rec->balance)) + ((-1)*($products_total_vat)) ;
+		$cond4["id"] = $customer_id ;
+		$success = $this->model1->update_rec($param1, $cond4, "customers") ;
+		
+		$param2["invoice_amount"] = $products_total_vat ;
+		$cond5["id"] = $order_id ;
+		$success = $this->model1->update_rec($param2, $cond5, "orders") ;
+		
+		if($success) return true ;
+	}
 	
 	private function date_function($status)
 	{
@@ -398,50 +445,6 @@ class Orders extends CI_Controller
 		}
 		else
 			redirect(base_url("orders")) ;
-	}
-	
-	private function calculate_invoice($order_id, $customer_id)
-	{
-		$cond1["order_id"] = $order_id ;
-		$order_products = $this->model1->get_all_cond($cond1, "order_products") ;
-		
-		$cond2["id"] = $customer_id ;
-		$customer_rec = $this->model1->get_one($cond2, "customers") ;
-		
-		$cond3["id"] = $customer_rec->vat_code ;
-		$vat_rec = $this->model1->get_one($cond3, "vat_codes") ;
-		
-		$vat_rate = (floatval($vat_rec->vat_rate)/100) ;
-		$maximum_limit = floatval($customer_rec->maximum_limit) ;
-		$transpotation_charges = floatval($customer_rec->transport_charges) ;
-		
-		$products_total = 0 ;
-		$products_total_vat = 0 ;
-		
-		if($order_products)
-		{
-			foreach($order_products as $rec):
-				$products_total = $products_total + (floatval($rec->product_price) * intval($rec->product_quantity)) ;
-				$products_total_vat = $products_total_vat + (floatval($rec->product_price) * intval($rec->product_quantity)) + (floatval($rec->product_price) * intval($rec->product_quantity) * (floatval($rec->vat_rate)/100)) ;
-			endforeach ;		
-		}
-		$temp = 0.0 ;
-		
-		if($products_total <= $maximum_limit) 
-		{
-			$temp = $vat_rate * $transpotation_charges ;
-			$products_total_vat = $products_total_vat + $transpotation_charges + $temp ;
-		}
-		
-		$param1["balance"] = (floatval($customer_rec->balance)) + ((-1)*($products_total_vat)) ;
-		$cond4["id"] = $customer_id ;
-		$success = $this->model1->update_rec($param1, $cond4, "customers") ;
-		
-		$param2["invoice_amount"] = $products_total_vat ;
-		$cond5["id"] = $order_id ;
-		$success = $this->model1->update_rec($param2, $cond5, "orders") ;
-		
-		if($success) return true ;
 	}
 	
 	public function order_details($order_id = 0, $msg = 0)
@@ -870,5 +873,99 @@ class Orders extends CI_Controller
 	
 	private function get_session_data()
 	{}
+	
+	public function create_pdf($order_id)
+	{
+		if($order_id) 
+		{
+			$cond1["id"] = $order_id ;
+			$order_rec = $this->model1->get_one($cond1, "orders") ;
+			
+			$cond2["order_id"] = $order_id ;
+			$products_rec = $this->model1->get_all_cond($cond2, "order_products") ;
+			
+			$cond["id"] = $order_rec->customer_id ;
+			$customer_rec = $this->model1->get_one($cond, "customers") ;
+			
+			$cond3["id"] = $customer_rec->vat_code ; 
+			$vat_rec = $this->model1->get_one($cond3, "vat_codes") ;
+			
+			$file_ext = "" ;
+			
+			if($order_rec->order_file != "") $file_ext = $this->get_file_extention($data["order_rec"]->id) ;
+			/**/
+			$this->load->library('cezpdf') ;
+			$this->load->helper('pdf');
+			
+			$text1 = "Order Status: ".$order_rec->status ;
+			$text1 = $text1."!%#!"."!%#!" ;
+			
+			$text1 = $text1."Purchase Order Number: ".$order_rec->purchase_order_number ;
+			$text1 = $text1."!%#!"."!%#!" ;
+			
+			$delivery_address = str_replace(array("<p>", "</p>"), "", $order_rec->delivery_address) ;
+			$text1 = $text1."Delivery Address: "."!%#!".str_replace("<br />", "!%#!", $delivery_address) ;
+			$text1 = $text1."!%#!"."!%#!" ;
+			
+			$invoice_address = str_replace(array("<p>", "</p>"), "", $order_rec->invoice_address) ;
+			$text1 = $text1."Invoice Address: "."!%#!".str_replace("<br />", "!%#!", $invoice_address) ;
+			
+			$text1 = $text1."!%#!"."!%#!"."!%#!" ;
+			
+			$this->cezpdf->ezText($text1, 10) ;
+			
+			$temp_sub_total = 0 ;
+            $temp_vat_tax = 0 ; 
+            $x = 1 ;
+			
+			$db_data = array() ;
+			
+			if($products_rec)
+			{
+				foreach($products_rec as $rec):
+                	$db_data[] = array('product_group' => $rec->product_group, 'products' => $rec->product_name, 'adl_code_product_code' => $rec->product_adl_code." ".$rec->product_code, 'quantity' => $rec->product_quantity, 'unit_price' => number_format($rec->product_price, 2 , ".", ","), 'total_price' => number_format (($rec->product_price) * ($rec->product_quantity), 2 , ".", ",")) ;
+                    $temp_sub_total = $temp_sub_total + floatval(($rec->product_price) * ($rec->product_quantity)) ;
+                    $temp_vat_tax = $temp_vat_tax + floatval((($rec->vat_rate)/100) * ($rec->product_price) * ($rec->product_quantity)) ;
+				endforeach ;
+			} 
+			
+			$transport_charges = 0 ;
+			if($temp_sub_total <= $customer_rec->maximum_limit) $transport_charges = $customer_rec->transport_charges ;
+
+			$db_data[] = array('product_group' => ' ', 'products' => ' ', 'adl_code_product_code' => ' ', 'quantity' => ' ', 'unit_price' => 'Transpotation Charges: ', 'total_price' => number_format($transport_charges, 2, ".", ",")) ;
+			
+			$db_data[] = array('product_group' => ' ', 'products' => ' ', 'adl_code_product_code' => ' ', 'quantity' => ' ', 'unit_price' => 'Sub Total Amount: ', 'total_price' => number_format(($temp_sub_total + $transport_charges), 2 , ".", ",")) ;
+			
+			$db_data[] = array('product_group' => ' ', 'products' => ' ', 'adl_code_product_code' => ' ', 'quantity' => ' ', 'unit_price' => 'VAT Code: ', 'total_price' => $vat_rec->vat_code) ;
+			
+			$temp_vat_tax = $temp_vat_tax + ($transport_charges * (floatval($vat_rec->vat_rate)/100)) ;
+			
+			$db_data[] = array('product_group' => ' ', 'products' => ' ', 'adl_code_product_code' => ' ', 'quantity' => ' ', 'unit_price' => 'VAT', 'total_price' => number_format(($temp_vat_tax), 2 , ".", ",")) ;
+			
+			$db_data[] = array('product_group' => ' ', 'products' => ' ', 'adl_code_product_code' => ' ', 'quantity' => ' ', 'unit_price' => 'Total', 'total_price' => number_format(($transport_charges + $temp_vat_tax  + $temp_sub_total), 2, ".", ",")) ;
+			
+			$col_names = array('product_group' => 'Product Group', 'products' => 'Products', 'adl_code_product_code' => 'ADL Code - Product Code', 'quantity' => 'Quantity', 'unit_price' => "Unit Price", 'total_price' => 'Total Price') ;
+			
+			$this->cezpdf->ezTable($db_data, $col_names, 'Order Products', array('width'=>550));
+			
+			$text2 = "" ;
+			$text2 = $text2."!%#!"."!%#!"."!%#!" ;
+			$order_description = str_replace(array("<p>", "</p>", '<p dir=\"ltr\">'), "", $order_rec->order_description) ;
+			$text2 = $text2."Order Description: "."!%#!".str_replace("<br />", "!%#!", $order_description) ;
+			
+			$text2 = $text2."!%#!"."!%#!" ;
+			
+			if($order_rec->order_file == "") $text2 = $text2."Order File: "."!%#!"."No File attached" ;
+			else $text2 = $text2."Order File: "."!%#!".$order_rec->purchase_order_number.".".$file_ext ;
+			
+			$text2 = $text2."!%#!"."!%#!" ;
+			
+			$this->cezpdf->ezText($text2, 10) ;
+			
+			$this->cezpdf->ezStream() ;
+		}
+		else 
+			redirect(base_url("orders")) ;
+	}
 }
 ?>
