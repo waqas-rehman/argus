@@ -27,7 +27,7 @@
              	
                 
                 <input type="hidden" id="maximum_limit" name="maximum_limit" value="<?php echo $customer_rec->maximum_limit ; ?>" />
-                <input type="hidden" id="transport_charges" name="transport_charges" value="<?php echo $customer_rec->transport_charges ; ?>" />
+                <input type="hidden" id="transport_charges" name="transport_charges" value="<?php echo $quotation_rec->transport_charges ; ?>" />
                 
              
              <div class="row">
@@ -106,7 +106,7 @@
                         	<td id="sub_total_transpotation_charges">
 							<?php
 								$transport_charges = floatval(0.00) ;
-								if($temp_sub_total <= $customer_rec->maximum_limit) $transport_charges = $customer_rec->transport_charges ;
+								if($temp_sub_total <= $customer_rec->maximum_limit) $transport_charges = $quotation_rec->transport_charges ;
 								echo get_decimal_number_format($transport_charges) ;
 							?>
                             </td>
@@ -132,7 +132,7 @@
                 <br />
 <input type="hidden" id="sub_total_hidden" name="sub_total_hidden" value="<?php echo get_decimal_number_format($temp_sub_total) ; ?>" />
 <input type="hidden" id="vat_total_hidden" name="vat_total_hidden" value="<?php echo get_decimal_number_format($temp_vat_tax) ; ?>" />
-<input type="hidden" id="freight_charges" name="freight_charges" value="<?php if($temp_sub_total > $customer_rec->maximum_limit) echo $customer_rec->transport_charges ; else echo "0" ; ?>" />
+<input type="hidden" id="freight_charges" name="freight_charges" value="<?php if($temp_sub_total > $customer_rec->maximum_limit) echo $quotation_rec->transport_charges ; else echo "0" ; ?>" />
                 <div class="row">
                 	<button id="save_and_submit" type="button"><span>Update</span></button>&nbsp;
                     <button id="cancel_products" type="button"><span>Cancel</span></button>

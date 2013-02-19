@@ -130,6 +130,7 @@ class Model2 extends CI_Model
 		else 
 			 return 0 ;		
 	}
+	
 	public function get_orders()
 	{
 		$q = "(SELECT * FROM orders WHERE type = 'order' AND status = 'Pending' ORDER BY orders.creation_date DESC LIMIT 5) UNION (SELECT * FROM orders WHERE type = 'order' AND status = 'Accepted' ORDER BY orders.acceptance_date DESC LIMIT 5) UNION (SELECT * FROM orders WHERE type = 'order' AND status = 'Ordered' ORDER BY orders.order_date DESC LIMIT 5) UNION (SELECT * FROM orders WHERE type = 'order' AND status = 'Shipped' ORDER BY orders.shipment_date DESC LIMIT 5)" ;
@@ -161,10 +162,51 @@ class Model2 extends CI_Model
 			 return 0 ;
 	}
 	
-	public function get_customer_invoice()
-	{
+	public function get_customer_invoice1() /* CRON JOB */
+	{ 
+		$q = "SELECT orders.status as status, orders.id as id, min(orders.invoice_date) as invoice_date, orders.purchase_order_number as purchase_order_number, 
+					customers.company_name as company_name,
+					customers.contact_person_name as contact_person_name,
+					customers.email_address as email_address,
+					customers.account_email as account_email,
+					customers.balance as balance,
+					customers.overdue_days as overdue_days, customers.registration_email_sent as registration_email_sent
+			FROM orders INNER JOIN customers ON orders.customer_id = customers.id
+			WHERE orders.status = 'Outstanding' ORDER BY orders.invoice_date DESC" ;
+		
+		$query = $this->db->query($q) ;
+		
+		if ($query->num_rows() > 0)
+		{
+			foreach ($query->result() as $row)
+				$data[] =  $row ;
+			return $data ;
+		}
+		else 
+			 return 0 ;
+	}
 	
-		$q = "(SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, customers.company_name as company_name, customers.contact_person_name as contact_person_name, customers.email_address as email_address , customers.balance as balance, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Outstanding'   ORDER BY orders.outstanding_date DESC) UNION (SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, customers.company_name as company_name, customers.contact_person_name as contact_person_name, customers.email_address as email_address, customers.balance as balance, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Invoiced' ORDER BY orders.invoice_date DESC)" ;
+	public function get_customer_invoice() /* CRON JOB */
+	{
+		/* $q = "(SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, customers.company_name as company_name, customers.contact_person_name as contact_person_name, customers.email_address as email_address, customers.balance as balance, customers.overdue_days as overdue_days, customers.registration_email_sent as registration_email_sent FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Outstanding' ORDER BY orders.outstanding_date DESC) UNION (SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, customers.company_name as company_name, customers.contact_person_name as contact_person_name, customers.email_address as email_address, customers.balance as balance, customers.overdue_days as overdue_days, customers.registration_email_sent as registration_email_sent FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Invoiced' ORDER BY orders.invoice_date DESC)" ; /**/
+		
+		$q = "SELECT orders.status as status, orders.id as id, min(orders.invoice_date) as invoice_date, orders.purchase_order_number as purchase_order_number, customers.company_name as company_name, customers.contact_person_name as contact_person_name, customers.email_address as email_address, customers.account_email as account_email, customers.balance as balance, customers.overdue_days as overdue_days, customers.registration_email_sent as registration_email_sent FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Invoiced' ORDER BY orders.invoice_date DESC" ;
+		
+		$query = $this->db->query($q) ;
+		
+		if ($query->num_rows() > 0)
+		{
+			foreach ($query->result() as $row)
+				$data[] =  $row ;
+			return $data ;
+		}
+		else 
+			 return 0 ;
+	}
+	
+	public function get_customer_invoice_dashboard()
+	{
+		$q = "(SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, customers.company_name as company_name, customers.contact_person_name as contact_person_name, customers.email_address as email_address, customers.balance as balance, customers.overdue_days as overdue_days, customers.registration_email_sent as registration_email_sent FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Outstanding' ORDER BY orders.outstanding_date DESC) UNION (SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, customers.company_name as company_name, customers.contact_person_name as contact_person_name, customers.email_address as email_address, customers.balance as balance, customers.overdue_days as overdue_days, customers.registration_email_sent as registration_email_sent FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Invoiced' ORDER BY orders.invoice_date DESC)" ; /**/
 		
 		$query = $this->db->query($q) ;
 		

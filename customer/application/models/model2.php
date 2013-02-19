@@ -140,7 +140,8 @@ class Model2 extends CI_Model
 		}
 		else return 0 ;
 	}
-public function get_orders_accepted($customer_id)
+	
+	public function get_orders_accepted($customer_id)
 	{
 		$q = "(SELECT * FROM orders WHERE customer_id = ".$customer_id." AND type = 'order' AND status = 'Accepted' ORDER BY orders.acceptance_date DESC LIMIT 5) UNION (SELECT * FROM orders WHERE type = 'order' AND customer_id = ".$customer_id." AND status = 'Shipped' ORDER BY orders.shipment_date DESC LIMIT 5)  UNION (SELECT * FROM orders WHERE type = 'order' AND customer_id = ".$customer_id." AND status = 'Ordered' ORDER BY orders.shipment_date DESC LIMIT 5)" ;
 		
@@ -170,7 +171,7 @@ public function get_orders_accepted($customer_id)
 			 return 0 ;
 	}
 
-public function get_customer_invoice2($customer_id)
+	public function get_customer_invoice2($customer_id)
 	{
 	
 		$q = "(SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, orders.invoice_amount as invoice_amount, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Outstanding' AND customer_id = ".$customer_id."  ORDER BY orders.outstanding_date DESC) UNION (SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, orders.invoice_amount as invoice_amount, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Invoiced' AND customer_id = ".$customer_id."  ORDER BY orders.invoice_date DESC)" ;
@@ -187,7 +188,7 @@ public function get_customer_invoice2($customer_id)
 			 return 0 ;
 	}
 
-public function get_customer_outstanding($customer_id)
+	public function get_customer_outstanding($customer_id)
 	{
 		$q = "SELECT * FROM orders WHERE customer_id = ".$customer_id." AND type = 'order' AND (status = 'Outstanding' OR status = 'Invoiced') ORDER BY orders.invoice_date DESC LIMIT 5" ;
 		
@@ -216,11 +217,46 @@ public function get_customer_outstanding($customer_id)
 		}
 		else return 0 ;
 	}
+	
+	public function get_large_payments($customer_id, $invoice_date, $last_timestamp)
+	{
+		if($last_timestamp == "")
+			$q = "(SELECT * FROM transactions WHERE transaction_type = 'Large Payment' AND customer_id = ".$customer_id." AND timestamp <= '".$invoice_date."' ORDER BY transactions.timestamp DESC)" ;
+		else
+			$q = "(SELECT * FROM transactions WHERE transaction_type = 'Large Payment' AND customer_id = ".$customer_id." AND timestamp <= '".$invoice_date."' AND timestamp > '".$last_timestamp."' ORDER BY transactions.timestamp DESC)" ;
+		
+		$query = $this->db->query($q) ;
+		
+		if ($query->num_rows() > 0)
+		{
+			foreach ($query->result() as $row)
+				$data[] =  $row ;
+			return $data ;
+		}
+		else 
+			 return 0 ;
+	}
 
 	public function get_transaction_orders($customer_id)
 	{
 	
-		$q = "(SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, orders.invoice_amount as invoice_amount, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Outstanding' AND customer_id = ".$customer_id."  ORDER BY orders.outstanding_date DESC) UNION (SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, orders.invoice_amount as invoice_amount, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Invoiced' AND customer_id = ".$customer_id."  ORDER BY orders.invoice_date DESC) UNION (SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, orders.invoice_amount as invoice_amount, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Completed' AND customer_id = ".$customer_id."  ORDER BY orders.invoice_date DESC)" ;
+		$q = "(SELECT
+					orders.status as status,
+					orders.id as id,
+					orders.invoice_date as invoice_date,
+					orders.purchase_order_number as purchase_order_number,
+					orders.invoice_amount as invoice_amount,
+					
+					customers.company_name as company_name,
+					customers.overdue_days as overdue_days
+				FROM
+					orders INNER JOIN customers ON orders.customer_id = customers.id
+				WHERE
+					orders.status = 'Outstanding' AND customer_id = ".$customer_id." 
+				ORDER BY
+					orders.outstanding_date DESC)
+			UNION
+			(SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, orders.invoice_amount as invoice_amount, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Invoiced' AND customer_id = ".$customer_id."  ORDER BY orders.invoice_date DESC) UNION (SELECT orders.status as status, orders.id as id, orders.invoice_date as invoice_date, orders.purchase_order_number as purchase_order_number, orders.invoice_amount as invoice_amount, customers.company_name as company_name, customers.overdue_days as overdue_days FROM orders INNER JOIN customers ON orders.customer_id = customers.id WHERE orders.status = 'Completed' AND customer_id = ".$customer_id."  ORDER BY orders.invoice_date DESC)" ;
 		
 		$query = $this->db->query($q) ;
 		

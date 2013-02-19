@@ -111,6 +111,15 @@ if ( ! function_exists('get_image_path'))
     }
 }
 
+if ( ! function_exists('create_email_address'))
+{
+	function create_email_address($email1, $email2)
+	{
+		if($email2 != "") return $email1.", ".$email2 ;
+    	else return $email1 ;
+	}
+}
+
 if ( ! function_exists('send_email_message'))
 {
 	function send_email_message($title, $to, $cc, $bcc, $subject, $message, $attachment)

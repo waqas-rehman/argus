@@ -39,11 +39,15 @@
 						<input type="hidden" name="order_id" id="order_id" value="<?php echo $order_rec->id ; ?>" />
 						<input type="hidden" name="customer_id" id="customer_id" value="<?php echo $order_rec->customer_id ; ?>" />
 						
-						<div class='_100'><p><label for="product_name">Purchase Order Number</label><input type="text" disabled="disabled" id="" name="" value="<?php echo $order_rec->purchase_order_number ; ?>" /></p></div>
+						<div class='_100'><p><label for="">Purchase Order Number</label><input type="text" disabled="disabled" id="purchase_order_number" name="purchase_order_number" value="<?php echo $order_rec->purchase_order_number ; ?>" /></p></div>
 						
-						<div class='_100'><p><label for="product_name">Invoiced Amount</label><input type="text" disabled="disabled" id="" name="" value="<?php echo $order_rec->invoice_amount ; ?>" /></p></div>
+						<div class='_100'><p><label for="">Invoiced Amount</label><input type="text" disabled="disabled" id="" name="" value="<?php echo $order_rec->invoice_amount ; ?>" /></p></div>
                         
-                        <div class='_100'><p><label for="product_name">Amount Due Against this Invoice</label><input type="text" disabled="disabled" id="" name="" value="<?php echo $due_amount ; ?>" /></p></div>
+                        <div class='_100'><p><label for="due_amount">Amount Due Against this Invoice</label><input type="text" disabled="disabled" id="" name="" value="<?php echo $due_amount ; ?>" /></p></div>
+                        
+                        <input type="hidden" name="purchase_order_number" id="purchase_order_number" value="<?php echo $order_rec->purchase_order_number ; ?>" />
+                        <input type="hidden" name="invoice_amount" id="invoice_amount" value="<?php echo $order_rec->invoice_amount ; ?>" />
+                        <input type="hidden" name="due_amount" id="due_amount" value="<?php echo $due_amount ; ?>" />
                         
                         <div class='_100'><p><label for="product_price">Amount (&pound;)</label><input type="text" id="transaction_amount" name="transaction_amount" value="<?php echo set_value('transaction_amount', '0.00') ; ?>" /></p></div>
 						

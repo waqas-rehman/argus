@@ -3,6 +3,7 @@
     	<div class="box"><div class="title">Customer Transactions<span class="hide"></span></div>
 			<?php
 				$global_amount = 0 ;
+				$last_timestamp = "" ;
 				if($orders)
 				{
 			?>
@@ -22,6 +23,9 @@
 				<?php	
 					foreach($orders as $rec1): 
 					$global_amount = $global_amount + $rec1->invoice_amount ;
+					$amount_rec = $this->model2->get_large_payments($this->session->userdata("customer_id"), $rec1->invoice_date, $last_timestamp) ;
+					large_amount($amount_rec) ;
+					$last_timestamp = $rec1->invoice_date ;
 				?>
 					<tr>
                         
@@ -35,6 +39,10 @@
 				<?php
 					$transactions = $this->model2->get_customer_transactions($this->session->userdata("customer_id"), $rec1->id) ;
 					if($transactions) { foreach($transactions as $rec):
+					
+					$amount_rec = $this->model2->get_large_payments($this->session->userdata("customer_id"), $rec->timestamp, $last_timestamp) ;
+					large_amount($amount_rec) ;
+					$last_timestamp = $rec->timestamp ;
 				?>
                     <tr>
                         
@@ -62,3 +70,25 @@
 	</div>
     
     <center><h1>Net Balance of Your Account: <?php echo "&pound;".get_decimal_number_format($global_amount) ; ?></h1></center>
+    
+    <?php
+		function large_amount($amount_rec)
+		{
+			if($amount_rec)
+			{
+				foreach($amount_rec as $rec2):
+	?>	
+    	<tr>
+        	<td></td>
+            <td></td>
+            <td>Large Amount</td>
+            <td><?php echo "&pound;".get_decimal_number_format($rec2->transaction_amount) ; ?></td>
+            <td><?php echo date("d/m/Y", strtotime($rec2->timestamp)) ; ?></td>
+            <td></td>
+		</tr>
+                    
+	<?php
+				endforeach ;
+			}
+		}
+	?>

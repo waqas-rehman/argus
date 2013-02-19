@@ -43,11 +43,13 @@ class Orders extends CI_Controller
 			$param = post_function(array("type" => "order",
 										 "customer_id" => "customer_id",
 										 "purchase_order_number" => "purchase_order_number",
-										 "invoice_address" => "invoice_address",
-										 "delivery_address" => "delivery_address",
-										 "order_description" => "order_description",
+										 "transport_charges" => "transport_charges",
 										 "status" => "order_status",
 										 "order_file_radio" => "upload_order_file")) ;
+			
+			$param["invoice_address"] = $this->input->post("invoice_address") ;
+			$param["delivery_address"] = $this->input->post("delivery_address") ;
+			$param["order_description"] = $this->input->post("order_description") ; 
 			
 			if(post_function("upload_order_file") == "Yes")
 			{
@@ -164,7 +166,7 @@ class Orders extends CI_Controller
 						
 					$email_data["client_name"] = $data["customer_rec"]->company_name;
 					$email_data["contact_person_name"] = $data["customer_rec"]->contact_person_name;
-					$param3["email_address"] = $data["customer_rec"]->email_address;
+					$param3["email_address"] = create_email_address($data["customer_rec"]->email_address, $data["customer_rec"]->account_email) ;
 						
 					$email_message = $this->load->view("email_templates/email_order_rec", $email_data, TRUE) ;
 					if($data["customer_rec"]->registration_email_sent == "Yes")
@@ -197,6 +199,7 @@ class Orders extends CI_Controller
 		
 		$cond2["id"] = $customer_id ;
 		$customer_rec = $this->model1->get_one($cond2, "customers") ;
+		$customer_balance = floatval($customer_rec->balance) ;
 		
 		$cond3["id"] = $customer_rec->vat_code ;
 		$vat_rec = $this->model1->get_one($cond3, "vat_codes") ;
@@ -223,10 +226,35 @@ class Orders extends CI_Controller
 			$products_total_vat = $products_total_vat + $transpotation_charges + $temp ;
 		}
 		
-		$param1["balance"] = (floatval($customer_rec->balance)) + ((-1)*($products_total_vat)) ;
-		$cond4["id"] = $customer_id ;
-		$success = $this->model1->update_rec($param1, $cond4, "customers") ;
-		
+		if($customer_balance > 0){
+			
+			if($customer_balance >= $products_total_vat){
+				
+				$transaction_params = array("order_id" => $order_id, "customer_id" => $customer_id, "transaction_type" => "Payment", "transaction_amount" => $products_total_vat, "timestamp" => date("Y-m-d G:i:s")) ;
+				$this->model1->insert_rec($transaction_params, "transactions") ;
+
+				$order_params = array("status" => "Completed", "compeletion_date" => date("Y-m-d G:i:s")) ;
+				$order_conds = array("id" => $order_id, "type" => "order", "customer_id" => $customer_id) ; 
+				$this->model1->update_rec($order_params, $order_conds, "orders") ;
+						
+				$customer_param["balance"] = $customer_balance - $products_total_vat ;
+				$customer_cond["id"] = $customer_id ;
+				$this->model1->update_rec($customer_param, $customer_cond, "customers") ;
+			
+			} else {
+				
+				$transaction_params = array("order_id" => $order_id, "customer_id" => $customer_id, "transaction_type" => "Payment", "transaction_amount" => $customer_balance, "timestamp" => date("Y-m-d G:i:s")) ;
+				$this->model1->insert_rec($transaction_params, "transactions") ;
+						
+				$customer_param["balance"] = $products_total_vat - $customer_balance ;
+				$customer_cond["id"] = $customer_id ;
+				$this->model1->update_rec($customer_param, $customer_cond, "customers") ;
+			}
+		} else {
+			$param1["balance"] = (floatval($customer_rec->balance)) + ((-1)*($products_total_vat)) ;
+			$cond4["id"] = $customer_id ;
+			$success = $this->model1->update_rec($param1, $cond4, "customers") ;
+		}
 		$param2["invoice_amount"] = $products_total_vat ;
 		$cond5["id"] = $order_id ;
 		$success = $this->model1->update_rec($param2, $cond5, "orders") ;
@@ -346,10 +374,7 @@ class Orders extends CI_Controller
 			$param1["status"] = mysql_real_escape_string($this->input->post("status")) ;
 			
 			$order_rec = $this->model1->get_one($cond1, "orders") ;
-			
-			if($order_rec->invoice_date == "0000-00-00 00:00:00" && $param1["status"] == "Invoiced")
-				$this->calculate_invoice($order_rec->id, $order_rec->customer_id) ;
-			
+			$temp_invoice_date = $order_rec->invoice_date ;
 			switch($param1["status"])
 			{
 				case "Pending" :
@@ -371,6 +396,15 @@ class Orders extends CI_Controller
 			
 			$rec_id = $this->model1->update_rec($param1, $cond1, "orders") ;
 			
+			if(($temp_invoice_date == "0000-00-00 00:00:00") && ($param1["status"] == "Invoiced"))
+				$this->calculate_invoice($order_rec->id, $order_rec->customer_id) ;
+			
+			/*
+			if($param1["status"] == "Invoiced" || $param1["status"] == "Outstanding")
+			{
+				$this->update_transaction_record($cond1["id"]) ;
+			}
+			/**/
 			if($rec_id)
 			{
 				$cond2["customer_record"] = $this->model1->get_one($cond1, "orders") ;
@@ -384,7 +418,7 @@ class Orders extends CI_Controller
 				$email_data["contact_person_name"] = $data["customer_rec"]->contact_person_name;
 				$email_data["order_status"] = $cond2["customer_record"]->status;
 				
-				$param3["email_address"] = $data["customer_rec"]->email_address;
+				$param3["email_address"] = create_email_address($data["customer_rec"]->email_address,$data["customer_rec"]->account_email) ;
 				
 				$email_data["insert_text"] = mysql_real_escape_string($this->input->post("email_data")) ;
 				
@@ -446,6 +480,22 @@ class Orders extends CI_Controller
 		else
 			redirect(base_url("orders")) ;
 	}
+	/*
+	private function update_transaction_record($order_id)
+	{
+		$cond1["id"] = $order_id ;
+		$order_rec = $this->model1->get_one($cond1, "orders") ;
+		
+		$cond2["id"] = $order_rec->customer_id ;
+		$customer_rec = $this->model1->get_one($cond2, "customers") ;
+		
+		$customer_balance = floatval($customer_rec->balance) ;
+		
+		if($customer_balance > 0)
+		{
+			
+		}
+	}/**/
 	
 	public function order_details($order_id = 0, $msg = 0)
 	{
@@ -610,6 +660,8 @@ class Orders extends CI_Controller
 					
 			$cond2["status"] = "Active" ;
 			$data["product_groups"] = $this->model1->get_all_cond($cond2, "product_groups") ;
+			
+			$data["order_rec"] = $this->model1->get_one(array("id" => $order_id), "orders") ;
 					
 			$cond3["id"] = $order_rec->customer_id ;
 			$data["customer_rec"] = $this->model1->get_one($cond3, "customers") ;
@@ -631,6 +683,9 @@ class Orders extends CI_Controller
 		if($_POST)
 		{
 			$order_id = mysql_real_escape_string($this->input->post("order_id")) ;
+			
+		$this->model1->update_rec(array("transport_charges" => mysql_real_escape_string($this->input->post("transport_charges"))), array("id" => $order_id), "orders") ;
+			
 			$ids = mysql_real_escape_string($this->input->post("current_tr")) ; 
 			$vat_rate = floatval(mysql_real_escape_string($this->input->post("vat_rate"))) ;
 			$num_of_records = mysql_real_escape_string($this->input->post("current_num")) ;
@@ -679,9 +734,7 @@ class Orders extends CI_Controller
 					endforeach ;
 				}
 			}
-			
 			redirect(base_url("orders/order_details/".$order_id."/11")) ;
-
 		} else
 			redirect(base_url("orders")) ;
 	}
@@ -892,7 +945,7 @@ class Orders extends CI_Controller
 			
 			$file_ext = "" ;
 			
-			if($order_rec->order_file != "") $file_ext = $this->get_file_extention($data["order_rec"]->id) ;
+			if($order_rec->order_file != "") $file_ext = $this->get_file_extention($order_rec->id) ;
 			/**/
 			$this->load->library('cezpdf') ;
 			$this->load->helper('pdf');
@@ -904,11 +957,11 @@ class Orders extends CI_Controller
 			$text1 = $text1."!%#!"."!%#!" ;
 			
 			$delivery_address = str_replace(array("<p>", "</p>"), "", $order_rec->delivery_address) ;
-			$text1 = $text1."Delivery Address: "."!%#!".str_replace("<br />", "!%#!", $delivery_address) ;
+			$text1 = $text1."Delivery Address: "."!%#!".str_replace(array("<br />", "<br>", "<br >", "<br/>"), "!%#!", $delivery_address) ;
 			$text1 = $text1."!%#!"."!%#!" ;
 			
 			$invoice_address = str_replace(array("<p>", "</p>"), "", $order_rec->invoice_address) ;
-			$text1 = $text1."Invoice Address: "."!%#!".str_replace("<br />", "!%#!", $invoice_address) ;
+			$text1 = $text1."Invoice Address: "."!%#!".str_replace(array("<br />", "<br>", "<br >", "<br/>"), "!%#!", $invoice_address) ;
 			
 			$text1 = $text1."!%#!"."!%#!"."!%#!" ;
 			
@@ -951,7 +1004,7 @@ class Orders extends CI_Controller
 			$text2 = "" ;
 			$text2 = $text2."!%#!"."!%#!"."!%#!" ;
 			$order_description = str_replace(array("<p>", "</p>", '<p dir=\"ltr\">'), "", $order_rec->order_description) ;
-			$text2 = $text2."Order Description: "."!%#!".str_replace("<br />", "!%#!", $order_description) ;
+			$text2 = $text2."Order Description: "."!%#!".str_replace(array("<br />", "<br>", "<br >", "<br/>"), "!%#!", $order_description) ;
 			
 			$text2 = $text2."!%#!"."!%#!" ;
 			

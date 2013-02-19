@@ -14,7 +14,7 @@ class Dashboard extends CI_Controller
 	{
 		$cond1["type"] = "order" ;
 		$data["orders"] = $this->model2->get_orders() ;
-		$data["Invoices"] = $this->model2->get_customer_invoice() ;
+		$data["Invoices"] = $this->model2->get_customer_invoice_dashboard() ;
 		
 		$data["msg"] = $msg ;
 		

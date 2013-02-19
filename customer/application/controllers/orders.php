@@ -27,7 +27,9 @@ class Orders extends CI_Controller
 	{
 		$cond1["id"] = $this->session->userdata("customer_id") ;
 		$data["customer_rec"] = $this->model1->get_one($cond1, "customers") ;
+		
 		$credit_limit = get_decimal_number_format(abs($data["customer_rec"]->maximum_credit_limit)) ;
+		$current_balance = $data["customer_rec"]->balance ;
 		$acount_balance = get_decimal_number_format(abs($data["customer_rec"]->balance)) ;
 		
 		$orders = $this->model2->get_customer_invoice2($this->session->userdata("customer_id"));
@@ -42,7 +44,7 @@ class Orders extends CI_Controller
 			
 		if(!$orders) $diff = "" ; 
 		
-		if(($acount_balance >= $credit_limit) || ($diff > 0)) {
+		if((($acount_balance >= $credit_limit) || ($diff > 0)) && $current_balance < 0) {
 			$data["msg"] = 1 ;
 			$data["session_data"] = $this->session_data("order_form") ;
 			$data["view"] = "order/acount_overdue" ;
@@ -53,6 +55,107 @@ class Orders extends CI_Controller
 			$data["view"] = "order/order_form" ;
 			$this->load->view("template/body", $data) ;
 		}		
+	}
+	
+	public function step2()
+	{
+		if($_POST)
+		{
+			$this->form_validation->set_error_delimiters('<li>', '</li>') ;
+			
+			$this->form_validation->set_rules("purchase_order_number", "Purchase Order Number", "required|is_unique[orders.purchase_order_number]") ;
+			$this->form_validation->set_rules("delivery_address", "Delivery Address", "required") ;
+			$this->form_validation->set_rules("invoice_address", "Invoice Address", "required") ;
+			
+			$cond1["id"] = $this->session->userdata("customer_id") ;
+			$data["customer_rec"] = $this->model1->get_one($cond1, "customers") ;
+			
+			if ($this->form_validation->run() == FALSE) {
+			
+				$data["msg"] = 1 ;
+				$data["session_data"] = $this->session_data("order_form") ;
+				$data["view"] = "order/order_form" ;
+				$this->load->view("template/body", $data) ;
+			
+			} else {
+				
+				$param1["type"] = "order" ;
+				
+				$param1["customer_id"] = $this->session->userdata("customer_id") ;
+				$param1["purchase_order_number"] = mysql_real_escape_string($this->input->post("purchase_order_number")) ;
+				$param1["invoice_address"] = mysql_real_escape_string($this->input->post("invoice_address")) ;
+				
+				$param1["delivery_address"] = mysql_real_escape_string($this->input->post("delivery_address")) ;
+				$param1["transport_charges"] = $data["customer_rec"]->transport_charges ;
+				
+				$param1["creation_date"] = date("Y-m-d G:i:s") ;
+				$param1["status"] = "Pending" ;
+				
+				$data["order_id"] = $this->model1->insert_rec($param1, "orders") ;
+				$data["msg"] = 1 ;
+			
+				$next_step = mysql_real_escape_string($this->input->post("next_step")) ;
+				$data["session_data"] = $this->session_data("order_form") ;
+				
+				if($next_step == "add_products") redirect(base_url("orders/edit_products/".$data["order_id"])) ;
+				else redirect(base_url("orders")) ;
+			}
+			
+		} else
+			redirect(base_url("orders")) ;
+	}
+	
+	public function edit_products($order_id = 0)
+	{
+		if($order_id)
+		{
+			$cond["order_id"] = $order_id ;
+			$temp_order_products = $this->model1->get_all_cond($cond, "order_products") ;
+			
+			if($temp_order_products)
+			{
+				$data["order_id"] = $order_id ;
+				
+				$cond1["order_id"] = $order_id ;
+				$data["total_products"] = $this->model1->count_rec_cond($cond1, "order_products") ;
+				$data["products_rec"] = $this->model1->get_all_cond($cond1, "order_products") ;
+					
+				$cond2["status"] = "Active" ;
+				$data["product_groups"] = $this->model1->get_all_cond($cond2, "product_groups") ;
+					
+				$cond3["id"] = $this->session->userdata("customer_id") ;
+				$data["customer_rec"] = $this->model1->get_one($cond3, "customers") ;
+						
+				$cond4["id"] = $data["customer_rec"]->vat_code ;
+				$data["vat_rec"] =  $this->model1->get_one($cond4, "vat_codes") ;
+						
+				$data["session_data"] = $this->session_data("order_form") ;
+				$data["view"] = "order/edit_products" ;
+				$this->load->view("template/body", $data) ;
+			
+			} else {
+				
+				$data["order_id"] = $order_id ;
+				$data["msg"] = 0 ;
+				
+				$cond1["status"] = "Active" ;
+				$data["product_groups"] = $this->model1->get_all_cond($cond1, "product_groups") ;
+				
+				$cond2["id"] = $this->session->userdata("customer_id") ;
+				$data["customer_rec"] = $this->model1->get_one($cond2, "customers") ;
+				
+				$data["order_rec"] = $this->model1->get_one(array("id" => $order_id), "orders") ; 
+				
+				$cond3["id"] = $data["customer_rec"]->vat_code ;
+				$data["vat_rec"] =  $this->model1->get_one($cond3, "vat_codes") ;
+				
+				$data["session_data"] = $this->session_data("order_form") ;
+				$data["view"] = "order/products_form" ;
+				$this->load->view("template/body", $data) ;
+			}
+		}
+		else
+			redirect(base_url("orders/add_products/".$order_id)) ;
 	}
 	
 	public function order_detail($order_id = 0, $msg = 0)
@@ -142,7 +245,7 @@ class Orders extends CI_Controller
 					
 					$email_data["client_name"] = $data["customer_rec"]->company_name;
 					$email_data["contact_person_name"] = $data["customer_rec"]->contact_person_name;
-					$param3["email_address"] = $data["customer_rec"]->email_address;
+					$param3["email_address"] = create_email_address($data["customer_rec"]->email_address, $data["customer_rec"]->account_email);
 					
 					$email_message = $this->load->view("email_templates/email_order_rec", $email_data, TRUE) ;
 					if($data["customer_rec"]->registration_email_sent == "Yes")
@@ -238,99 +341,6 @@ class Orders extends CI_Controller
 			redirect(base_url("orders")) ;
 	}
 	
-	public function step2()
-	{
-		if($_POST)
-		{
-			$this->form_validation->set_error_delimiters('<li>', '</li>') ;
-			
-			$this->form_validation->set_rules("purchase_order_number", "Purchase Order Number", "required|is_unique[orders.purchase_order_number]") ;
-			$this->form_validation->set_rules("delivery_address", "Delivery Address", "required") ;
-			$this->form_validation->set_rules("invoice_address", "Invoice Address", "required") ;
-			
-			if ($this->form_validation->run() == FALSE) {
-			
-				$data["msg"] = 1 ;
-				$cond1["id"] = $this->session->userdata("customer_id") ;
-				$data["customer_rec"] = $this->model1->get_one($cond1, "customers") ;
-				$data["session_data"] = $this->session_data("order_form") ;
-				$data["view"] = "order/order_form" ;
-				$this->load->view("template/body", $data) ;
-			
-			} else {
-				
-				$param1["type"] = "order" ;
-				$param1["customer_id"] = $this->session->userdata("customer_id") ;
-				$param1["purchase_order_number"] = mysql_real_escape_string($this->input->post("purchase_order_number")) ;
-				$param1["invoice_address"] = mysql_real_escape_string($this->input->post("invoice_address")) ;
-				$param1["delivery_address"] = mysql_real_escape_string($this->input->post("delivery_address")) ;
-				$param1["creation_date"] = date("Y-m-d G:i:s") ;
-				$param1["status"] = "Pending" ;
-				
-				$data["order_id"] = $this->model1->insert_rec($param1, "orders") ;
-				$data["msg"] = 1 ;
-			
-				$next_step = mysql_real_escape_string($this->input->post("next_step")) ;
-				$data["session_data"] = $this->session_data("order_form") ;
-
-				if($next_step == "add_products") redirect(base_url("orders/edit_products/".$data["order_id"])) ;
-				else redirect(base_url("orders")) ;
-			}
-			
-		} else
-			redirect(base_url("orders")) ;
-	}
-	
-	public function edit_products($order_id = 0)
-	{
-		if($order_id)
-		{
-			$cond["order_id"] = $order_id ;
-			$temp_order_products = $this->model1->get_all_cond($cond, "order_products") ;
-			
-			if($temp_order_products)
-			{
-				$data["order_id"] = $order_id ;
-				
-				$cond1["order_id"] = $order_id ;
-				$data["total_products"] = $this->model1->count_rec_cond($cond1, "order_products") ;
-				$data["products_rec"] = $this->model1->get_all_cond($cond1, "order_products") ;
-					
-				$cond2["status"] = "Active" ;
-				$data["product_groups"] = $this->model1->get_all_cond($cond2, "product_groups") ;
-					
-				$cond3["id"] = $this->session->userdata("customer_id") ;
-				$data["customer_rec"] = $this->model1->get_one($cond3, "customers") ;
-						
-				$cond4["id"] = $data["customer_rec"]->vat_code ;
-				$data["vat_rec"] =  $this->model1->get_one($cond4, "vat_codes") ;
-						
-				$data["session_data"] = $this->session_data("order_form") ;
-				$data["view"] = "order/edit_products" ;
-				$this->load->view("template/body", $data) ;
-			
-			} else {
-				
-				$data["order_id"] = $order_id ;
-				$data["msg"] = 0 ;
-				
-				$cond1["status"] = "Active" ;
-				$data["product_groups"] = $this->model1->get_all_cond($cond1, "product_groups") ;
-				
-				$cond2["id"] = $this->session->userdata("customer_id") ;
-				$data["customer_rec"] = $this->model1->get_one($cond2, "customers") ;
-				
-				$cond3["id"] = $data["customer_rec"]->vat_code ;
-				$data["vat_rec"] =  $this->model1->get_one($cond3, "vat_codes") ;
-				
-				$data["session_data"] = $this->session_data("order_form") ;
-				$data["view"] = "order/products_form" ;
-				$this->load->view("template/body", $data) ;
-			}
-		}
-		else
-			redirect(base_url("orders/add_products/".$order_id)) ;
-	}
 	
 	public function products()
 	{
@@ -748,7 +758,6 @@ class Orders extends CI_Controller
 		} else
 			return true ;
 	}
-	
 	
 	public function date_func2($invoice_date, $overdue_days)
 	{

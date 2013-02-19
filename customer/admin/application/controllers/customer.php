@@ -61,7 +61,8 @@ class Customer extends CI_Controller
 		{
 			$validation_parameters = array("company_name" => "Company Name&required",
 										   "contact_person_name" => "First Name&required",
-										   "email_address" => "Email Address&required|valid_email",
+										   "email_address" => "Main Contact Email Address&required|valid_email",
+										   "account_email" => "Account Email Address&required|valid_email",
 										   "telephone_number" => "Telephone Number&required|max_length[20]|min_length[10]|numeric",
 										   "address_line_1" => "Address Line 1&required",
 										   "address_line_2" => "Address Line 2&required",
@@ -93,6 +94,7 @@ class Customer extends CI_Controller
 				$param1 = post_function(array("company_name" => "company_name",
 								"contact_person_name" => "contact_person_name",
 								"email_address" => "email_address",
+								"account_email" => "account_email",
 								"telephone_number" => "telephone_number",
 								"address_line_1" => "address_line_1",
 								"address_line_2" => "address_line_2",
@@ -306,6 +308,7 @@ class Customer extends CI_Controller
 			$validation_parameters = array("company_name" => "Company Name&required",
 										   "contact_person_name" => "First Name&required",
 										   "email_address" => "Email Address&required|valid_email",
+										   "account_email" => "Account Email Address&required|valid_email",
 										   "telephone_number" => "Telephone Number&required|max_length[20]|min_length[10]|numeric",
 										   "address_line_1" => "Address Line 1&required",
 										   "address_line_2" => "Address Line 2&required",
@@ -347,6 +350,7 @@ class Customer extends CI_Controller
 				$param1 = post_function(array("company_name" => "company_name",
 											  "contact_person_name" => "contact_person_name",
 											  "email_address" => "email_address",
+											  "account_email" => "account_email",
 											  "telephone_number" => "telephone_number",
 											  "address_line_1" => "address_line_1",
 											  "address_line_2" => "address_line_2",
@@ -423,11 +427,11 @@ class Customer extends CI_Controller
 	{
 		if($_POST)
 		{
-			$this->form_validation->set_error_delimiters('<li>', '</li>') ;
+			//$this->form_validation->set_error_delimiters('<li>', '</li>') ;
 			
 			$validation_parameters = array("customer_email_address" => "Customer Email Address(es)&required|valid_emails") ;
 			
-			if (form_validation_function() == FALSE) {
+			if (form_validation_function($validation_parameters) == FALSE) {
 			
 				$customer_id = post_function("customer_id") ;
 				$cond1["id"] = $customer_id ;
@@ -443,8 +447,9 @@ class Customer extends CI_Controller
 											  "cc_email_address" => "cc_email_address",
                                               "bcc_email_address" => "bcc_email_address",
 											  "email_subject" => "email_subject",
-											  "email_message" => "email_message",
 											  "customer_id" => "customer_id")) ;
+				
+				$param1["email_message"] = $this->input->post("email_message") ;
 				
 				$config['upload_path'] =  "./email_attachments/" ;
 				$config['allowed_types'] = "gif|jpg|png|pdf|doc|docx|xls|xlsx|ppt|pptx|txt" ;

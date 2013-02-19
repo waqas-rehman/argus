@@ -99,7 +99,7 @@
 					<tr>
 						<th>Purchase Order#</th>
 						<th>Invoiced Date</th>
-						<th>Compeletion Date</th>
+						<th>Completion Date</th>
 						<th>Shipment Date</th>
 						<th>Invoice Amount</th>
 						

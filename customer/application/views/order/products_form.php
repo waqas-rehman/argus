@@ -12,7 +12,7 @@
                 <input type="hidden" id="vat_rate" name="vat_rate" value="<?php echo floatval($vat_rec->vat_rate) ; ?>" />
                 
                 <input type="hidden" id="maximum_limit" name="maximum_limit" value="<?php echo $customer_rec->maximum_limit ; ?>" />
-                <input type="hidden" id="transport_charges" name="transport_charges" value="<?php echo $customer_rec->transport_charges ; ?>" />
+                <input type="hidden" id="transport_charges" name="transport_charges" value="<?php echo $order_rec->transport_charges ; ?>" />
                 
                 <table cellspacing="0" cellpadding="0" border="0"> 
 					<thead> 

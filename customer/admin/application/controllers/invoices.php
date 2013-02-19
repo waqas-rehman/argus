@@ -14,7 +14,15 @@ class Invoices extends CI_Controller
 	{
 		$cond1["type"] = "order" ;
 		$cond1["status"] = "Invoiced" ;
-		$data["invoices"] = $this->model1->get_all_cond($cond1, "orders") ;
+		$invoices = $this->model1->get_all_cond($cond1, "orders") ;
+		
+		$cond1["status"] = "Outstanding" ;
+		$outstanding = $this->model1->get_all_cond($cond1, "orders") ;
+		
+		if(is_array($invoices) && is_array($outstanding)) $data["invoices"] = array_merge($invoices, $outstanding) ;
+		elseif(is_array($invoices)) $data["invoices"] = $invoices ;
+		elseif(is_array($invoices)) $data["invoices"] = $outstanding ;
+		else $data["invoices"] = 0 ;
 		
 		$data["msg"] = $msg ;
 		$data["session_data"] = $this->get_session_data() ;
@@ -25,8 +33,17 @@ class Invoices extends CI_Controller
 	public function payments($msg = 0)
 	{
 		$cond1["type"] = "order" ;
-		$cond1["status"] = "invoiced" ;
-		$data["invoices"] = $this->model1->get_all_cond($cond1, "orders") ;
+		$cond1["status"] = "Invoiced" ;
+		$invoices = $this->model1->get_all_cond($cond1, "orders") ;
+		
+		$cond1["type"] = "order" ;
+		$cond1["status"] = "Outstanding" ;
+		$outstanding = $this->model1->get_all_cond($cond1, "orders") ;
+		
+		if($invoices && $outstanding)
+			$data["invoices"] = array_merge($invoices, $outstanding) ;
+		else
+			$data["invoices"] = $invoices ;
 		
 		$data["msg"] = $msg ;
 		$data["session_data"] = $this->get_session_data() ;
@@ -55,8 +72,10 @@ class Invoices extends CI_Controller
 		{
 			$this->form_validation->set_error_delimiters('<li>', '</li>') ;
 			
-			$this->form_validation->set_rules("transaction_amount", "Transaction Amount", "required|decimal") ;
-			$this->form_validation->set_rules("transaction_type", "Transaction Type", "required|") ;
+			
+			$this->form_validation->set_rules("transaction_amount", "Transaction Amount", "required|decimal|less_than[".(post_function("due_amount") + 1)."]") ;
+			$this->form_validation->set_rules("transaction_type", "Transaction Type", "required") ;
+			
 			$this->form_validation->set_rules("", "", "required") ;
 			
 			if ($this->form_validation->run() == FALSE) {
@@ -70,25 +89,25 @@ class Invoices extends CI_Controller
 				$this->load->view("template/body", $data) ;
 			
 			} else {
-				
-				$param1["order_id"] = mysql_real_escape_string($this->input->post("order_id")) ;
-				$param1["customer_id"] = mysql_real_escape_string($this->input->post("customer_id")) ;
-				$param1["transaction_amount"] = floatval(mysql_real_escape_string($this->input->post("transaction_amount"))) ;
-				$param1["transaction_type"] = mysql_real_escape_string($this->input->post("transaction_type")) ;
+				$param1 = post_function(array("order_id" => "order_id", "customer_id" => "customer_id", "transaction_type" => "transaction_type")) ;
 				$param1["timestamp"] = date("Y-m-d G:i:s") ;
+				
+				$order_rec = $this->model1->get_one(array("id" => post_function("order_id")), "orders") ;
+				$due_amount = get_due_amount($order_rec->id, $order_rec->customer_id) ;
+				
+				$transaction_amount = floatval(post_function("transaction_amount")) ;
+				
+				if($transaction_amount > $due_amount) $param1["transaction_amount"] = $due_amount ;
+				else  $param1["transaction_amount"] = $transaction_amount ;
 				
 				$rec_id = $this->model1->insert_rec($param1, "transactions") ;
 				
-				$cond2["id"] = $param1["order_id"] ;
-				$order_rec = $this->model1->get_one($cond2, "orders") ;
-				
-				$cond3["id"] = $param1["customer_id"] ;
-				$customer_rec = $this->model1->get_one($cond3, "customers") ;
+				$customer_rec = $this->model1->get_one(array("id" => $param1["customer_id"]), "customers") ;
 				
 				if($param1["transaction_type"] == "Credit_Note" || $param1["transaction_type"] == "Payment")
 				{
-					$param3["balance"] = floatval($customer_rec->balance) + $param1["transaction_amount"] ; 
-					$this->model1->update_rec($param3, $cond3, "customers") ;
+					$param3["balance"] = floatval($customer_rec->balance) + $transaction_amount ; 
+					$this->model1->update_rec($param3, array("id" => $param1["customer_id"]), "customers") ;
 					
 					$net = get_due_amount($order_rec->id, $order_rec->customer_id) ;
 					
@@ -96,12 +115,12 @@ class Invoices extends CI_Controller
 					{
 						$param11["status"] = "Completed" ;
 						$param11["compeletion_date"] = date("Y-m-d G:i:s") ;
-						$this->model1->update_rec($param11, $cond2, "orders") ;
+						$this->model1->update_rec($param11, array("id" => post_function("order_id")), "orders") ;
 					}
 					
 				} else {
 					
-					$param3["balance"] = floatval($customer_rec->balance) - $param1["transaction_amount"] ; 
+					$param3["balance"] = floatval($customer_rec->balance) - $transaction_amount ; 
 					$this->model1->update_rec($param3, $cond3, "customers") ;
 				}
 				
@@ -234,7 +253,7 @@ class Invoices extends CI_Controller
 					$data["customer_rec"] = $this->model1->get_one($cond2, "customers") ;
 				
 			
-				    $param3["email_address"] = $data["customer_rec"]->email_address;
+				    $param3["email_address"] = create_email_address($data["customer_rec"]->email_address, $data["customer_rec"]->account_email) ;
 					$email_data["contact_person_name"] = $data["customer_rec"]->contact_person_name;
 					$email_data["purchase_order_number"] = $data["order_rec"]->purchase_order_number;
 				
@@ -261,10 +280,6 @@ class Invoices extends CI_Controller
 		}
 		else
 			redirect(base_url("invoices")) ;
-	}
-	
-	private function get_session_data()
-	{
 	}
 
 	private function get_file_extention($order_id = 0)
@@ -352,6 +367,10 @@ class Invoices extends CI_Controller
 		}
 		else echo "fail" ; 
 		exit ;
+	}
+	
+	private function get_session_data()
+	{
 	}
 }
 ?>

@@ -44,7 +44,7 @@
                             	<td class='center'><a href="<?php echo base_url("orders/add_order/".$rec->id) ; ?>"><?php echo $rec->company_name ; ?></a></td>
                                 <td class='center'><?php echo $rec->contact_person_name ; ?></td>
                                 <td class='center'><?php echo $rec->telephone_number ; ?></td>
-                                <td class='center'><?php echo $rec->username ; ?></td>
+                                <td class='center'><a href="<?php echo base_url("payments/large_payment/".$rec->id) ; ?>"><?php echo $rec->username ; ?></a></td>
                                 <td class='center'><?php if($rec->last_login != "0000-00-00 00:00:00") echo date("d/m/Y g:i a", strtotime($rec->last_login)) ; ?></td>
 								<td class='center'>
                                 	&nbsp;<a href="<?php echo base_url("customer/product_prices_form/".$rec->id) ; ?>"><img title="Add/Update Product Prices" src="<?php echo base_url("img/icons/packs/fugue/16x16/block.png") ; ?>" /></a>

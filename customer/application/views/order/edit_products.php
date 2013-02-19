@@ -12,7 +12,7 @@
              <input type="hidden" id="vat_rate" name="vat_rate" value="<?php echo floatval($vat_rec->vat_rate) ; ?>" />
              
              <input type="hidden" id="maximum_limit" name="maximum_limit" value="<?php echo $customer_rec->maximum_limit ; ?>" />
-             <input type="hidden" id="transport_charges" name="transport_charges" value="<?php echo $customer_rec->transport_charges ; ?>" />
+             <input type="hidden" id="transport_charges" name="transport_charges" value="<?php echo $order_rec->transport_charges ; ?>" />
                 
              
                 <table cellspacing="0" cellpadding="0" border="0"> 
@@ -90,7 +90,7 @@
 								<?php
 									$transport_charges = floatval(0.00) ;
 									if($temp_sub_total <= $customer_rec->maximum_limit)
-										$transport_charges = $customer_rec->transport_charges ;
+										$transport_charges = $order_rec->transport_charges ;
 										
 									echo number_format(($transport_charges), 2 , ".", ",") ;
 								?>

@@ -166,3 +166,12 @@ if ( ! function_exists('get_decimal_number_format'))
 		return number_format($number, 2, '.', '');
     }
 }
+
+if ( ! function_exists('create_email_address'))
+{
+	function create_email_address($email1, $email2)
+	{
+		if($email2 != "") return $email1.", ".$email2 ;
+    	else return $email1 ;
+	}
+}

@@ -247,6 +247,8 @@ class Quotations extends CI_Controller
 	
 	private function creation_quotation_record($quotation_number, $quotation_notes)
 	{
+		$customer_rec = $this->model1->get_one(array("id" => $this->session->userdata("customer_id")), "customers") ;
+		
 		$paramx["type"] = "quotation" ;
 		$paramx["customer_id"] = $this->session->userdata("customer_id") ;
 		$paramx["purchase_order_number"] = $quotation_number ;
@@ -256,6 +258,7 @@ class Quotations extends CI_Controller
 		$paramx["order_description"] = $quotation_notes ;
 		$paramx["order_file_radio"] = "" ;
 		$paramx["order_file"] = "" ;
+		$paramx["transport_charges"] = $customer_rec->transport_charges ;
 		$paramx["status"] = "" ;
 		$paramx["creation_date"] = date("Y-m-d G:i:s") ;
 		$paramx["order_date"] = "0000-00-00 00:00:00" ;

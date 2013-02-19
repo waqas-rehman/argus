@@ -1,4 +1,5 @@
 <?php $this->load->view("orders/tiny_mice") ; ?>
+<script type="text/javascript" src="<?php /* echo base_url("ckeditor/ckeditor.js") ; /**/ ?>"></script>
 <div id="main-content">
 	<div class="container_12">
 		<div class='grid_12'><h1>Order Details</h1></div>
@@ -49,10 +50,13 @@
                                             
                     	<input type="hidden" id="vat_rate" name="vat_rate" value="<?php echo $vat_rec->vat_rate ; ?>" />
                     	<input type="hidden" id="maximum_limit" name="maximum_limit" value="<?php echo $customer_rec->maximum_limit ; ?>" />
-   		            	<input type="hidden" id="transport_charges" name="transport_charges" value="<?php echo $customer_rec->transport_charges ; ?>" />
-                    	
+   		            	
                         <input type="hidden" id="current_tr" name="current_tr" value="1" />
                 		<input type="hidden" id="current_num" name="current_num" value="1" />
+                        <br />
+                        
+                        <table><tbody><tr><td align="center" valign="middle">Transport Charges:&nbsp;&nbsp;&nbsp;</td><td align="center" valign="middle"><input type="text" id="transport_charges"  name="transport_charges" value="<?php echo $customer_rec->transport_charges ; ?>" class="ttransport_charges" /></td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr></tbody></table>
+                        
                         <table class='table'>
                         	<thead>
                                 <tr>
@@ -245,6 +249,11 @@
 </div> <!--! end of #main-content -->
 
 <script type="text/javascript">
+
+//CKEDITOR.replace( 'invoice_address', {fullPage: true, extraPlugins: 'wysiwygarea'});
+//CKEDITOR.replace( 'delivery_address', {fullPage: true, extraPlugins: 'wysiwygarea'});
+
+
 $(function(){
 	
 	$("#submit_form").click(function(){ 
@@ -526,6 +535,11 @@ $(function(){
 			vat_and_total() ;
 		}
 	});
+	
+	$(".ttransport_charges").live('blur', function(){
+		vat_and_total() ;
+	}) ;
+	
 }) ;
 </script>
 

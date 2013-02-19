@@ -15,7 +15,7 @@
                 	<td width="656" height="auto" align="left" valign="top" style="font-family:Arial, Helvetica, sans-serif; color:#4e4e4e; font-size:13px; padding:10px;">
                     	<strong>Dear <?php echo $contact_person_name; ?>,</strong>
                         <p>Thank you for your continued business. It is much appreciated.</p>
-                        <p>Unfortunately your account has is now overdue by <?php echo $difference;?> day(s) and has therefore been disabled.</p>
+                        <p>Unfortunately your account is now overdue by <?php echo $difference ; ?> day(s) and has therefore been disabled.</p>
                         <p>Please ensure that payment reaches us as soon as possible. Once the outstanding balance has been cleared, your account will be re-enabled.</p>
                     </td>
             	</tr>

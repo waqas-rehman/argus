@@ -85,7 +85,7 @@
 								<?php
 									$transport_charges = floatval(0.00) ;
 									if($temp_sub_total <= $customer_rec->maximum_limit)
-										$transport_charges = $customer_rec->transport_charges ;
+										$transport_charges = $order_rec->transport_charges ;
 									echo number_format(($transport_charges), 2 , ".", ",") ;
 								?>
                             </td>

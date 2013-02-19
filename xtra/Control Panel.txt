@@ -22,3 +22,8 @@ Password: AsfgHjkl1
 
 Customer end url: http://portal.argusdistribution.co.uk
 Admin end URl: http://portal.argusdistribution.co.uk/admin 
+
+
+php /home/sites/argusdistribution.co.uk/public_html/portal/admin/cron.php /monthly_check/daily_reminder_overdue
+
+php /home/sites/argusdistribution.co.uk/public_html/portal/admin/cron.php /monthly_check/monthly_email_customers

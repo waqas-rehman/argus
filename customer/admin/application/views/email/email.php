@@ -76,8 +76,12 @@ tinyMCE.init({
 
                     <fieldset>
                     	<legend>Email Customer</legend>
-						
-                        <div class='_100'><p><label for="customer_email_address">Customer Email Address</label><input type="text" id="customer_email_address" name="customer_email_address" value="<?php echo set_value("customer_email_address", $customer_rec->email_address) ; ?>" /></p></div>
+						<?php
+                        	$temp_email = $customer_rec->email_address ;
+							if($customer_rec->account_email != "")
+								$temp_email = $temp_email.", ".$customer_rec->account_email ;
+						?>
+                        <div class='_100'><p><label for="customer_email_address">Customer Email Address</label><input type="text" id="customer_email_address" name="customer_email_address" value="<?php echo set_value("customer_email_address", $temp_email) ; ?>" /></p></div>
                         
                         <div class='_50'><p><label for="cc_email_address">CC</label><input type="text" id="cc_email_address" name="cc_email_address" value="<?php echo set_value("cc_email_address") ; ?>" /></p></div>
                         

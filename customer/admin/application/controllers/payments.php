@@ -553,6 +553,175 @@ class Payments extends CI_Controller
 		} else
 			redirect(base_url("orders")) ;
 	}
+	
+	public function large_payment($user_id, $msg = 0)
+	{
+		if($user_id)
+		{
+			$cond1["id"] = $user_id ;
+			$data["customer_rec"] = $this->model1->get_one($cond1, "customers") ;
+			
+			$data["msg"] = $msg ;
+			$data["session_data"] = $this->get_session_data() ;
+			$data["view"] = "invoices/large_transaction" ;
+			$this->load->view("template/body", $data) ;
+		}
+		else
+			redirect(base_url("customer")) ;
+	}
+	
+	public function insert_transaction()
+	{
+		if($_POST)
+		{
+			$validation_parameter = array("transaction_amount" => "Transaction Amount&required|decimal|greater_than[0]") ;
+			
+			if (form_validation_function($validation_parameter) == FALSE)
+			{
+				$cond1["id"] = post_function("customer_id") ;
+				$data["customer_rec"] = $this->model1->get_one($cond1, "customers") ;
+				
+				$data["msg"] = "1" ;
+				$data["session_data"] = $this->get_session_data() ;
+				$data["view"] = "invoices/large_transaction" ;
+				$this->load->view("template/body", $data) ;
+			}
+			else
+			{
+				$customer_id = post_function("customer_id") ;
+				$transaction_amount = post_function("transaction_amount") ;
+				
+				$transaction_params = array("order_id" => (-1), "customer_id" => $customer_id, "transaction_type" => "Large Payment", "transaction_amount" => $transaction_amount, "timestamp" => date("Y-m-d G:i:s")) ;
+				$this->model1->insert_rec($transaction_params, "transactions") ;
+				
+				$res1 = $this->clear_outstanding_invoices($customer_id, $transaction_amount) ;
+				
+				$res2 = $this->clear_invoiced_invoices($customer_id, $res1["remaining_amount"]) ;
+				
+				$cond_customer["id"] = $customer_id ; 
+				$customer_rec = $this->model1->get_one($cond_customer, "customers") ;
+				$customer_balance = $customer_rec->balance ;
+				
+				if($res2["remaining_amount"] > 0)
+				{
+					$customer_param["balance"] = $customer_balance + $res2["remaining_amount"] ;
+					$customer_cond["id"] = $customer_id ;
+					$this->model1->update_rec($customer_param, $customer_cond, "customers") ;
+				}				
+				redirect(base_url("orders")) ;
+			}
+		}
+		else
+			redirect(base_url("customer")) ;
+	}
+	
+	private function clear_outstanding_invoices($customer_id, $transaction_amount)
+	{
+		$response = array() ;
+		
+		$response["status"] = "done" ;
+		$response["remaining_amount"] = $transaction_amount ;
+		
+		if($transaction_amount <= 0) return $response ;
+		
+		$cond_customer["id"] = $customer_id ; 
+		$customer_rec = $this->model1->get_one($cond_customer, "customers") ;
+		$customer_balance = $customer_rec->balance ;
+		
+		$res1 = $this->model1->get_all_cond_orderby(array("type" => "order", "customer_id" => $customer_id, "status" => "Outstanding"), "orders", "outstanding_date", "ASC") ;
+		if($res1) 
+		{
+			
+			foreach($res1 as $rec):
+				$due_amount = get_due_amount($rec->id, $rec->customer_id) ;
+				if($due_amount > 0)
+				{
+					if($transaction_amount >= $due_amount)
+					{
+						$transaction_params = array("order_id" => $rec->id, "customer_id" => $rec->customer_id, "transaction_type" => "Payment", "transaction_amount" => $due_amount, "timestamp" => date("Y-m-d G:i:s")) ;
+						$this->model1->insert_rec($transaction_params, "transactions") ;
+						
+						$order_params = array("status" => "Completed", "compeletion_date" => date("Y-m-d G:i:s")) ;
+						$order_conds = array("id" => $rec->id, "type" => $rec->type, "customer_id" => $rec->customer_id) ; 
+						$this->model1->update_rec($order_params, $order_conds, "orders") ;
+						
+						$customer_param["balance"] = $customer_balance + $due_amount ;
+						$customer_cond["id"] = $rec->customer_id ;
+						$this->model1->update_rec($customer_param, $customer_cond, "customers") ;
+						 
+						$transaction_amount = $transaction_amount - $due_amount ;
+					}
+					else
+					{
+						$transaction_params = array("order_id" => $rec->id, "customer_id" => $rec->customer_id, "transaction_type" => "Payment", "transaction_amount" => $transaction_amount, "timestamp" => date("Y-m-d G:i:s")) ;
+						$this->model1->insert_rec($transaction_params, "transactions") ;
+						
+						
+						$customer_param["balance"] = $customer_balance + $transaction_amount ;
+						$customer_cond["id"] = $rec->customer_id ;
+						$this->model1->update_rec($customer_param, $customer_cond, "customers") ;
+						 
+						$transaction_amount = 0 ;
+					}
+				}
+			endforeach ;
+			$response["status"] = "done" ;
+			$response["remaining_amount"] = $transaction_amount ;
+		}
+		return $response ;
+	}
+	
+	private function clear_invoiced_invoices($customer_id, $transaction_amount)
+	{
+		$response = array("status" => "done", "remaining_amount" => $transaction_amount) ;
+		 
+		if($transaction_amount <= 0) return $response ;
+		
+		$cond_customer["id"] = $customer_id ;
+		$customer_rec = $this->model1->get_one($cond_customer, "customers") ;
+		$customer_balance = $customer_rec->balance ;
+		
+		$res1 = $this->model1->get_all_cond_orderby(array("type" => "order", "customer_id" => $customer_id, "status" => "Invoiced"), "orders", "invoice_date", "ASC") ;
+		if($res1) 
+		{
+			foreach($res1 as $rec):
+				$due_amount = get_due_amount($rec->id, $rec->customer_id) ;
+				if($due_amount > 0)
+				{
+					if($transaction_amount >= $due_amount)
+					{
+						$transaction_params = array("order_id" => $rec->id, "customer_id" => $rec->customer_id, "transaction_type" => "Payment", "transaction_amount" => $due_amount, "timestamp" => date("Y-m-d G:i:s")) ;
+						$this->model1->insert_rec($transaction_params, "transactions") ;
+						
+						$order_params = array("status" => "Completed", "compeletion_date" => date("Y-m-d G:i:s")) ;
+						$order_conds = array("id" => $rec->id, "type" => $rec->type, "customer_id" => $rec->customer_id) ; 
+						$this->model1->update_rec($order_params, $order_conds, "orders") ;
+						
+						$customer_param["balance"] = $customer_balance + $due_amount ;
+						$customer_cond["id"] = $rec->customer_id ;
+						$this->model1->update_rec($customer_param, $customer_cond, "customers") ;
+						 
+						$transaction_amount = $transaction_amount - $due_amount ;
+					}
+					else
+					{
+						$transaction_params = array("order_id" => $rec->id, "customer_id" => $rec->customer_id, "transaction_type" => "Payment", "transaction_amount" => $transaction_amount, "timestamp" => date("Y-m-d G:i:s")) ;
+						$this->model1->insert_rec($transaction_params, "transactions") ;
+						
+						
+						$customer_param["balance"] = $customer_balance + $transaction_amount ;
+						$customer_cond["id"] = $rec->customer_id ;
+						$this->model1->update_rec($customer_param, $customer_cond, "customers") ;
+						 
+						$transaction_amount = 0 ;
+					}
+				}
+			endforeach ;
+			$response["status"] = "done" ;
+			$response["remaining_amount"] = $transaction_amount ;
+		}
+		return $response ;
+	}
 }
 
 ?>
